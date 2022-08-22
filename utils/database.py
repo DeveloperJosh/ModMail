@@ -1,4 +1,8 @@
 from pymongo import MongoClient
-client = MongoClient('mongodb+srv://Blue:Gunner0099@cluster0.ou4x3.mongodb.net/?retryWrites=true&w=majority')
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+client = MongoClient(os.getenv("MONGO_URI")) # One username and password on the github is now deleted and new database was created
 
 db = client.mail
