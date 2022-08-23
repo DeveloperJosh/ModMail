@@ -95,11 +95,7 @@ class Modmail(commands.Cog):
     @commands.command()
     async def help(self, ctx):
         embed = discord.Embed(title="Modmail", description="Modmail is a bot that allows you to send messages to staff members in DMs.", color=0x00ff00)
-<<<<<<< HEAD
         embed.add_field(name="Commands", value="```\nping - pong\nreply - reply to a ticket\nareply - reply anonymously to a ticket\nclose - close a ticket\nhelp - this help message\nsetup - sets up the server\nreset - removes all data from teh db```", inline=False)
-=======
-        embed.add_field(name="Commands", value="```\nping - pong\nreply - reply to a ticket\nareply - reply anonymously to a ticket\nclose - close a ticket\nhelp - this help message\nBan - bans a user from the server\n```", inline=False)
->>>>>>> 8fc0005110ee1e42f0ca6edce18d5b5fa98536d0
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)
 
