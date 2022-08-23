@@ -96,7 +96,7 @@ class Modmail(commands.Cog):
     @commands.command()
     async def help(self, ctx):
         embed = discord.Embed(title="Modmail", description="Modmail is a bot that allows you to send messages to staff members in DMs.", color=0x00ff00)
-        embed.add_field(name="Commands", value="```\nping - pong\nreply - reply to a ticket\nareply - reply anonymously to a ticket\nclose - close a ticket\nhelp - this help message\n```", inline=False)
+        embed.add_field(name="Commands", value="```\nping - pong\nreply - reply to a ticket\nareply - reply anonymously to a ticket\nclose - close a ticket\nhelp - this help message\nsetup - sets up the server\nreset - removes all data from teh db```", inline=False)
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)
 
@@ -113,6 +113,20 @@ class Modmail(commands.Cog):
             await ctx.send(embed=embed)
         else:
             embed = discord.Embed(title="Setup Complete", description=f"The server {ctx.guild.name} has already been setup.", color=0x00ff00)
+            embed.set_footer(text="Modmail")
+            await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def reset(self, ctx):
+        try:
+            embed = discord.Embed(title="Reset", description="The server was reset and all the db data has been deleted", color=0x00ff00)
+            embed.set_footer(text="Modmail")
+            await ctx.send(embed=embed)
+            db.servers.delete_one({'_id': ctx.guild.id})
+        except:
+            embed = discord.Embed(title="Error:x:",
+            description="The server is not setup.", color=discord.Color.red())
             embed.set_footer(text="Modmail")
             await ctx.send(embed=embed)
             
