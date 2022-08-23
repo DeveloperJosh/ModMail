@@ -14,7 +14,6 @@ class Modmail(commands.Cog):
         # mod mail
         if message.author.bot:
             return
-        # if message is dm
         if message.channel.type == discord.ChannelType.private:
             if not db.users.find_one({'_id': message.author.id}):
                     guild = self.bot.get_guild(self.guild)
@@ -96,7 +95,7 @@ class Modmail(commands.Cog):
     @commands.command()
     async def help(self, ctx):
         embed = discord.Embed(title="Modmail", description="Modmail is a bot that allows you to send messages to staff members in DMs.", color=0x00ff00)
-        embed.add_field(name="Commands", value="```\nping - pong\nreply - reply to a ticket\nareply - reply anonymously to a ticket\nclose - close a ticket\nhelp - this help message\n```", inline=False)
+        embed.add_field(name="Commands", value="```\nping - pong\nreply - reply to a ticket\nareply - reply anonymously to a ticket\nclose - close a ticket\nhelp - this help message\nBan - bans a user from the server\n```", inline=False)
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)
 
