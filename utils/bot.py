@@ -39,7 +39,7 @@ async def main():
 @bot.event
 async def on_ready():
     # clear the console
-    os.system('cls' if os.name == 'nt' else 'clear')
+    # os.system('cls' if os.name == 'nt' else 'clear')
     print("""
 
    _____                             __ _     __  __           _                 _ _ 

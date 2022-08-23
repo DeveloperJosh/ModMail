@@ -1,3 +1,4 @@
+from distutils.log import error
 from email import message
 import discord
 from discord.ext import commands
@@ -12,16 +13,9 @@ class Mod_Commands(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def ban(self, ctx, user: discord.Member, *, reason):
-        if user is ctx.message.author:
-           embed = discord.Embed(title="No!!", description="You can not ban yourself")
-           await ctx.send(embed=embed)
-           return
-        else:
-            embed = discord.Embed(title="Banned", description=reason)
-            await ctx.send(embed=embed)
-            await user.send(embed=embed)
-            user.ban(reason)
-
+        await user.ban()
+        embed = discord.Embed(title="Banned", description=reason)
+        await ctx.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Mod_Commands(bot))
