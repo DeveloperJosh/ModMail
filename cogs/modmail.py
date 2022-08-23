@@ -115,6 +115,7 @@ class Modmail(commands.Cog):
             embed.set_footer(text="Modmail")
             await ctx.send(embed=embed)
             
+            
 async def setup(bot):
     await bot.add_cog(Modmail(bot))
     # add slash commands
