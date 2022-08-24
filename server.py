@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from utils.database import db
 from utils.config import guild, username, password
     
-app = Flask(__name__, template_folder='html', static_folder='html/static')
+app = Flask(__name__, template_folder='html', static_folder='static')
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
@@ -14,8 +14,7 @@ def index():
             cookie.set_cookie('logged_in', 'true')
             return cookie
         else:
-            flash('Invalid username or password')
-            return redirect(url_for('index'))
+            return render_template('bad_pass.html')
      else:
         return render_template('index.html')
 
