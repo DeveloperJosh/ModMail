@@ -1,14 +1,14 @@
-from turtle import color
 import discord
 from utils.database import db
 from discord.ext import commands
-from discord import app_commands as slash_commands
+from utils.config import guild, staff, logs
 
 class Modmail(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.guild = 1009594348993781801
-        self.staff = 1010992361662316645
+        self.guild = guild
+        self.staff = staff
+        self.logs = logs
 
     @commands.Cog.listener()
     async def on_message(self, message):

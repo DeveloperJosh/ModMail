@@ -1,13 +1,14 @@
 import discord
 from discord.ext import commands
 from utils.database import db
+from utils.config import guild, staff, logs
 
 class Mod_Commands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.guild = 1009594348993781801
-        self.staff = 1010992361662316645
-        self.logs = 1011830276550307910
+        self.guild = guild
+        self.staff = staff
+        self.logs = logs
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):

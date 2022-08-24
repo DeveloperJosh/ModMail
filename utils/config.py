@@ -1,4 +1,5 @@
 guild = 1009594348993781801
 staff = 1010992361662316645
+logs = 1011830276550307910
 username = "Blue"
 password = "Admin"
