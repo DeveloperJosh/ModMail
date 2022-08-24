@@ -36,6 +36,10 @@ class Modmail(commands.Cog):
                     embed.set_footer(text="Modmail")
                     await channel.send(embed=embed)
                     await channel.create_webhook(name=message.author.name)
+                    webhook = await channel.webhooks()
+                    webhook = webhook[0]
+                    await webhook.send(message.content, username=message.author.name, avatar_url=message.author.avatar.url)
+
             else:
                 # send user message to their ticket
                 guild = self.bot.get_guild(self.guild)
