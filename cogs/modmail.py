@@ -1,3 +1,4 @@
+from turtle import color
 import discord
 from utils.database import db
 from discord.ext import commands
@@ -32,13 +33,16 @@ class Modmail(commands.Cog):
                     embed = discord.Embed(title="Ticket Open", description=f"You have opened a ticket. Please wait for a staff member to reply.", color=0x00ff00)
                     embed.set_footer(text="Modmail")
                     await message.author.send(embed=embed)
-                    embed = discord.Embed(title="New User", description=f"{message.author.mention} has opened a ticket.", color=0x00ff00)
+                    embed = discord.Embed(title=f"```User ID: {message.author.id}```", color=discord.Color.blurple())
+                    time = message.author.created_at.strftime("%b %d, %Y")
+                    embed.add_field(name="Account Age", value=f"{time}", inline=False)
+                    embed.add_field(name="Message", value=f"{message.content}", inline=True)
                     embed.set_footer(text="Modmail")
                     await channel.send(embed=embed)
                     await channel.create_webhook(name=message.author.name)
-                    webhook = await channel.webhooks()
-                    webhook = webhook[0]
-                    await webhook.send(message.content, username=message.author.name, avatar_url=message.author.avatar.url)
+                    # webhook = await channel.webhooks()
+                    # webhook = webhook[0]
+                    # await webhook.send(message.content, username=message.author.name, avatar_url=message.author.avatar.url)
 
             else:
                 # send user message to their ticket

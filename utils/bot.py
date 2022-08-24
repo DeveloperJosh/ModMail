@@ -10,6 +10,7 @@ intents.members = True
 intents.message_content = True
 intents.emojis = True
 intents.emojis_and_stickers = True
+intents.bans = True
 
 bot = commands.Bot(
     activity=discord.Game(name="Dm me for help!"),
