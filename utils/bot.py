@@ -11,13 +11,15 @@ intents.message_content = True
 intents.emojis = True
 intents.emojis_and_stickers = True
 intents.bans = True
+intents.webhooks = True
+
 
 bot = commands.Bot(
     activity=discord.Game(name="Dm me for help!"),
     command_prefix="!",
     intents=intents,
     case_insensitive=True,
-    allowed_mentions=discord.AllowedMentions(everyone=False, roles=False, users=True, replied_user=True),
+    allowed_mentions=discord.AllowedMentions(everyone=False, roles=True, users=True, replied_user=True),
     strip_after_prefix=True,
     help_command=None
 )
