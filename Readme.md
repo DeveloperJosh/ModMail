@@ -1,4 +1,4 @@
-# SynMail (Syncraft modmail)
+# ModMail
 
 I'm making this bot to replace my modmail [MailHook](https://github.com/DeveloperJosh/MailHook)
 
