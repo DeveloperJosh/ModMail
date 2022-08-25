@@ -32,9 +32,13 @@ class Mod_Commands(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def ban(self, ctx, user: discord.Member, *, reason):
+     try:
       embed = discord.Embed(title="Banned", description=f"Oh No. It looks like you have been banned by {ctx.message.author.name}.\nReason: {reason}\nGuild: {ctx.guild.name}")
-      await user.send("You have been banned")
+      await user.send(embed=embed)
       await ctx.guild.ban(user)
+     except:
+        embed = discord.Embed(title="Error:x:", description="It looks like a error has occurred.")
+        await ctx.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Mod_Commands(bot))
