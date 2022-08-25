@@ -1,13 +1,17 @@
+from email import utils
+from typing import Dict
 import discord
 from utils.database import db
+from utils.config import staff, logs
 from discord.ext import commands
-from utils.config import guild, staff, logs
+from utils.dropdown import ServersDropdown, ServersDropdownView, Confirm
+
+dropdown_concurrency = []
 
 class Modmail(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.guild = guild
-        self.staff = staff
+        #self.staff = staff
         self.logs = logs
 
     @commands.Cog.listener()
@@ -17,8 +21,35 @@ class Modmail(commands.Cog):
             return
         if message.channel.type == discord.ChannelType.private:
             if not db.users.find_one({'_id': message.author.id}):
-                    guild = self.bot.get_guild(self.guild)
-                    if not db.servers.find_one({'_id': guild.id}):
+
+              mutual_guilds = message.author.mutual_guilds
+              final_mutual_guilds: Dict[discord.Guild, dict] = {}
+              for guild in mutual_guilds:
+               try:
+                    final_mutual_guilds.update({guild: guild.id})
+               except:
+                print("Could not find guild: {}".format(guild))
+                return
+              view = ServersDropdownView()
+              select = ServersDropdown(list(final_mutual_guilds))
+              view.add_item(select)
+              main_msg = await message.channel.send("Hey looks like you want to start a modmail thread.\nIf so, please select a server you want to contact and continue.", view=view)
+              dropdown_concurrency.append(message.author.id)
+              await view.wait()
+              if not view.yes:
+                    return await main_msg.delete()
+              final_guild = self.bot.get_guild(int(view.children[2].values[0]))  # type: ignore
+              await main_msg.edit(view=None)
+              confirm = Confirm(message, 60)
+              m = await message.channel.send(f"Are you sure you want to send this message to {final_guild.name}'s staff?", view=confirm)
+              await confirm.wait()
+              if not confirm.value:
+                return await m.delete()
+              await m.edit(view=None)
+              if message.author.id in dropdown_concurrency:
+                dropdown_concurrency.remove(message.author.id)
+                guild = self.bot.get_guild(int(view.children[2].values[0]))  # type: ignore
+                if not db.servers.find_one({'_id': guild.id}):
                         embed = discord.Embed(
                             title="Oh no!",
                             description=f"Oh no! The server {guild.name} is not in the database. Please contact a server admin.",
@@ -26,27 +57,28 @@ class Modmail(commands.Cog):
                         )
                         await message.author.send(embed=embed)
                         return
-                    channel = await guild.create_text_channel(name=f"ticket-{message.author.id}", category=guild.get_channel(db.servers.find_one({'_id': guild.id})['category'])) # type: ignore
-                    await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False)
-                    await channel.set_permissions(guild.get_role(self.staff), read_messages=True, send_messages=True)
-                    db.users.insert_one({'_id': message.author.id, 'ticket': channel.id})
-                    embed = discord.Embed(title="Ticket Open", description=f"You have opened a ticket. Please wait for a staff member to reply.", color=0x00ff00)
-                    embed.set_footer(text="Modmail")
-                    await message.author.send(embed=embed)
-                    embed = discord.Embed(title=f"```User ID: {message.author.id}```", color=discord.Color.blurple())
-                    time = message.author.created_at.strftime("%b %d, %Y")
-                    embed.add_field(name="Account Age", value=f"{time}", inline=False)
-                    embed.add_field(name="Message", value=f"{message.content}", inline=True)
-                    embed.set_footer(text="Modmail")
-                    await channel.send(embed=embed)
-                    await channel.create_webhook(name=message.author.name)
+                channel = await guild.create_text_channel(name=f"ticket-{message.author.id}", category=guild.get_channel(db.servers.find_one({'_id': guild.id})['category'])) # type: ignore
+                await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False)
+                #await channel.set_permissions(guild.get_role(self.staff), read_messages=True, send_messages=True)
+                # add channel to db
+                embed = discord.Embed(title="Ticket Open", description=f"You have opened a ticket. Please wait for a staff member to reply.", color=0x00ff00)
+                embed.set_footer(text="Modmail")
+                await message.author.send(embed=embed)
+                embed = discord.Embed(title=f"```User ID: {message.author.id}```", color=discord.Color.blurple())
+                time = message.author.created_at.strftime("%b %d, %Y")
+                embed.add_field(name="Account Age", value=f"{time}", inline=False)
+                embed.add_field(name="Message", value=f"{message.content}", inline=True)
+                embed.set_footer(text="Modmail")
+                db.users.insert_one({'_id': message.author.id, "ticket": channel.id, "guild": guild.id})
+                await channel.send(embed=embed)
+                await channel.create_webhook(name=message.author.name)
                     # webhook = await channel.webhooks()
                     # webhook = webhook[0]
                     # await webhook.send(message.content, username=message.author.name, avatar_url=message.author.avatar.url)
 
             else:
                 # send user message to their ticket
-                guild = self.bot.get_guild(self.guild)
+                guild = self.bot.get_guild(db.users.find_one({'_id': message.author.id})['guild']) # type: ignore
                 channel = guild.get_channel(db.users.find_one({'_id': message.author.id})['ticket']) # type: ignore
                 webhook_in_channel = await channel.webhooks()
                 webhook = webhook_in_channel[0]
@@ -93,7 +125,7 @@ class Modmail(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     async def close(self, ctx):
         id = ctx.message.channel.name.split("-")[1]
-        db.users.delete_one({'ticket': ctx.message.channel.id})
+        db.users.delete_one({'ticket': ctx.channel.id})
         embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed", color=0x00ff00)
         embed.set_footer(text="Modmail")
         user = self.bot.get_user(int(id))
@@ -113,9 +145,9 @@ class Modmail(commands.Cog):
         if not db.servers.find_one({'_id': ctx.guild.id}):
             category = await ctx.guild.create_category(name="Tickets")
             await category.set_permissions(ctx.guild.default_role, read_messages=False, send_messages=False)
-            await category.set_permissions(ctx.guild.get_role(self.staff), read_messages=True, send_messages=True)
-            db.servers.insert_one({'_id': self.guild, 'category': category.id})
-            embed = discord.Embed(title="Setup", description=f"{ctx.author.mention} has setup Modmail.", color=0x00ff00)
+            #await category.set_permissions(ctx.guild.get_role(self.staff), read_messages=True, send_messages=True)
+            db.servers.insert_one({'_id': ctx.guild.id, 'category': category.id})
+            embed = discord.Embed(title="Setup", description=f"We are all set.", color=0x00ff00)
             embed.set_footer(text="Modmail")
             await ctx.send(embed=embed)
         else:
