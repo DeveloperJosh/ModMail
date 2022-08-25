@@ -1,2 +1,0 @@
-username = "Blue"
-password = "Admin"
