@@ -1,3 +1,4 @@
+import logging
 import discord
 from discord.ext import commands 
 import os
@@ -23,7 +24,7 @@ bot = commands.Bot(
     strip_after_prefix=True,
     help_command=None
 )
-
+logging.basicConfig(level=logging.INFO)
 
 async def load_cogs():
     i = 0

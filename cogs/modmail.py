@@ -77,19 +77,14 @@ class Modmail(commands.Cog):
                     await channel.send(content=files)
                 await channel.send(embed=embed)
                 await channel.create_webhook(name=message.author.name)
-                    # webhook = await channel.webhooks()
-                    # webhook = webhook[0]
-                    # await webhook.send(message.content, username=message.author.name, avatar_url=message.author.avatar.url)
 
             else:
-                # send user message to their ticket
                 guild = self.bot.get_guild(db.users.find_one({'_id': message.author.id})['guild']) # type: ignore
                 channel = guild.get_channel(db.users.find_one({'_id': message.author.id})['ticket']) # type: ignore
                 webhook_in_channel = await channel.webhooks()
                 webhook = webhook_in_channel[0]
                 files = [await attachment.to_file() for attachment in message.attachments]
                 await webhook.send(message.content, username=message.author.name, avatar_url=message.author.avatar.url, files=files)
-                print(f"{message.author.name} sent a message to {channel.name}")
 
 
     @commands.command()
@@ -152,17 +147,18 @@ class Modmail(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
+    @commands.bot_has_permissions(administrator=True)
     @commands.has_permissions(administrator=True)
     async def setup(self, ctx):
         if not db.servers.find_one({'_id': ctx.guild.id}):
-            category = await ctx.guild.create_category(name="Tickets")
-            role = await ctx.guild.create_role(name="Ticket Support")
-            await category.set_permissions(ctx.guild.default_role, read_messages=False, send_messages=False)
-            await category.set_permissions(ctx.guild.get_role(role.id), read_messages=True, send_messages=True)
-            db.servers.insert_one({'_id': ctx.guild.id, 'category': category.id, "staff_role": role.id})
-            embed = discord.Embed(title="Setup", description=f"Okay I know you didn't get to pick this stuff but that is coming soon\nCategory: {category.name}\nSupport Role: {role.name}", color=0x00ff00)
-            embed.set_footer(text="Modmail")
-            await ctx.send(embed=embed)
+             category = await ctx.guild.create_category(name="Tickets")
+             role = await ctx.guild.create_role(name="Ticket Support")
+             await category.set_permissions(ctx.guild.default_role, read_messages=False, send_messages=False)
+             await category.set_permissions(ctx.guild.get_role(role.id), read_messages=True, send_messages=True)
+             db.servers.insert_one({'_id': ctx.guild.id, 'category': category.id, "staff_role": role.id})
+             embed = discord.Embed(title="Setup", description=f"Okay I know you didn't get to pick this stuff but that is coming soon\nCategory: {category.name}\nSupport Role: {role.name}", color=0x00ff00)
+             embed.set_footer(text="Modmail")
+             await ctx.send(embed=embed)
         else:
             embed = discord.Embed(title="Setup Complete", description=f"The server {ctx.guild.name} has already been setup.", color=0x00ff00)
             embed.set_footer(text="Modmail")
