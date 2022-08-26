@@ -60,3 +60,4 @@ async def on_ready():
     print(f"Connected to: {len(bot.emojis)} emojis")
     print(f"Connected to: {len(bot.voice_clients)} voice clients")
     print(f"Connected to: {len(bot.private_channels)} private_channels")
+    await bot.tree.sync()

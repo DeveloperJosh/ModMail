@@ -1,10 +1,10 @@
-from email import message, utils
 from typing import Dict
 import discord
 from utils.database import db
 from discord.ext import commands
 from utils.dropdown import ServersDropdown, ServersDropdownView, Confirm
 from utils.message import wait_for_msg
+from discord import app_commands
 
 dropdown_concurrency = []
 
@@ -178,8 +178,17 @@ class Modmail(commands.Cog):
             description="The server is not setup.", color=discord.Color.red())
             embed.set_footer(text="Modmail")
             await ctx.send(embed=embed)
+
+    @app_commands.context_menu()
+    async def react(interaction: discord.Interaction, message: discord.Message):
+     await interaction.response.send_message('Very cool message!', ephemeral=True)
+
+    @app_commands.context_menu()
+    async def ban(interaction: discord.Interaction, user: discord.Member):
+      await interaction.response.send_message(f'Should I actually ban {user}...', ephemeral=True)
+
             
 async def setup(bot):
-    await bot.add_cog(Modmail(bot))
+    await bot.add_cog(Modmail(bot), guilds=[discord.Object(id=884470177176109056)])
     # add slash commands
     print("Modmail is ready.")
