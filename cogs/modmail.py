@@ -3,8 +3,6 @@ import discord
 from utils.database import db
 from discord.ext import commands
 from utils.dropdown import ServersDropdown, ServersDropdownView, Confirm
-from utils.message import wait_for_msg
-from discord import app_commands
 
 dropdown_concurrency = []
 
@@ -92,22 +90,24 @@ class Modmail(commands.Cog):
     async def ping(self, ctx):
         await ctx.send(f"Pong! {round(self.bot.latency * 1000)}ms")
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
-    async def reply(self, ctx, *, message):
-        # delete message
-        await ctx.message.delete()
+    async def reply(self, ctx: commands.Context, *, message):
+        msg = await ctx.send("Send reply")
         ticket_id = ctx.channel.id
         user_id = db.users.find_one({'ticket': ticket_id})['_id'] # type: ignore
         # dm the user with the message
         user = self.bot.get_user(user_id)
-        embed = discord.Embed(title="Ticket Reply", description=f"Staff: {ctx.author.name}\nMessage: {message}", color=0x00ff00)
-        embed.set_footer(text="Modmail")
-        await user.send(embed=embed)
-        webhook = await ctx.channel.webhooks()
-        await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url)
-        print(f"{ctx.author.name} sent a message to {ctx.channel.name}")
+        embed = discord.Embed().set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url).set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
+        await user.send(message,
+        files=[await attachment.to_file() for attachment in ctx.message.attachments],
+        embed=embed)
+        webhook = await ctx.channel.webhooks()  # type: ignore
+        await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
+        if isinstance(ctx, commands.Context):
+            await ctx.message.delete()
+            await msg.delete()
 
     @commands.command()
     @commands.guild_only()
@@ -136,14 +136,6 @@ class Modmail(commands.Cog):
         user = self.bot.get_user(int(id))
         await user.send(embed=embed)
         await ctx.message.channel.delete()
-
-    @commands.command()
-    @commands.guild_only()
-    async def help(self, ctx):
-        embed = discord.Embed(title="Modmail", description="Modmail is a bot that allows you to send messages to staff members in DMs.", color=0x00ff00)
-        embed.add_field(name="Commands", value="```\nping - pong\nreply - reply to a ticket\nareply - reply anonymously to a ticket\nclose - close a ticket\nhelp - this help message\nsetup - sets up the server\nreset - removes all data from teh db```", inline=False)
-        embed.set_footer(text="Modmail")
-        await ctx.send(embed=embed)
 
     @commands.command()
     @commands.guild_only()
@@ -179,16 +171,20 @@ class Modmail(commands.Cog):
             embed.set_footer(text="Modmail")
             await ctx.send(embed=embed)
 
-    @app_commands.context_menu()
-    async def react(interaction: discord.Interaction, message: discord.Message):
-     await interaction.response.send_message('Very cool message!', ephemeral=True)
+    @commands.hybrid_command()
+    @commands.guild_only()
+    async def help(self, ctx):
+        embed = discord.Embed(title="Modmail", description="Modmail is a bot that allows you to send messages to staff members in DMs.", color=0x00ff00)
+        embed.add_field(name="Commands", value="```\nping - pong\nreply - reply to a ticket\nareply - reply anonymously to a ticket\nclose - close a ticket\nhelp - this help message\nsetup - sets up the server\nreset - removes all data from teh db```", inline=False)
+        embed.set_footer(text="Modmail")
+        await ctx.send(embed=embed)
 
-    @app_commands.context_menu()
-    async def ban(interaction: discord.Interaction, user: discord.Member):
-      await interaction.response.send_message(f'Should I actually ban {user}...', ephemeral=True)
+    @commands.hybrid_command()
+    @commands.has_permissions(administrator=True)
+    async def test(self, ctx: commands.Context):
+       await ctx.send("Works")
 
             
 async def setup(bot):
     await bot.add_cog(Modmail(bot), guilds=[discord.Object(id=884470177176109056)])
-    # add slash commands
     print("Modmail is ready.")
