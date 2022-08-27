@@ -10,7 +10,7 @@ from typing import List, Optional
 import discord
 from discord.ext import commands
 
-class CustomBot(commands.Bot):
+class ModMail(commands.Bot):
     def __init__(
         self,
         *args,
@@ -43,6 +43,5 @@ async def main():
     intents.bans = True
     intents.webhooks = True
     ext = ['modmail', 'errors']
-    async with CustomBot(command_prefix="!", intents=intents, testing_guild_id=884470177176109056, initial_extensions=ext, help_command=None) as bot:
-  # type: ignore
-          await bot.start(os.getenv("DISCORD_TOKEN"), reconnect=True)  # type: ignore
+    async with ModMail(command_prefix="!", intents=intents, testing_guild_id=884470177176109056, initial_extensions=ext, help_command=None) as bot:
+     await bot.start(os.getenv("DISCORD_TOKEN"), reconnect=True)

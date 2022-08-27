@@ -187,4 +187,3 @@ class Modmail(commands.Cog):
             
 async def setup(bot):
     await bot.add_cog(Modmail(bot), guilds=[discord.Object(id=884470177176109056)])
-    print("Modmail is ready.")
