@@ -183,7 +183,6 @@ class Modmail(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def test(self, ctx: commands.Context):
        await ctx.send("Works")
-
             
 async def setup(bot):
     await bot.add_cog(Modmail(bot), guilds=[discord.Object(id=884470177176109056)])
