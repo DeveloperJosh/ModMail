@@ -1,6 +1,7 @@
 from typing import Dict
 import discord
 from utils.database import db
+from discord import app_commands
 from discord.ext import commands
 from utils.dropdown import ServersDropdown, ServersDropdownView, Confirm
 
@@ -85,16 +86,16 @@ class Modmail(commands.Cog):
                 await webhook.send(message.content, username=message.author.name, avatar_url=message.author.avatar.url, files=files)
 
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.guild_only()
     async def ping(self, ctx):
-        await ctx.send(f"Pong! {round(self.bot.latency * 1000)}ms")
+        await ctx.send(f"Pong! {round(self.bot.latency * 1000)}ms", ephemeral=True)
 
     @commands.hybrid_command()
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     async def reply(self, ctx: commands.Context, *, message):
-        msg = await ctx.send("Send reply")
+        msg = await ctx.send("Send reply", ephemeral=True)
         ticket_id = ctx.channel.id
         user_id = db.users.find_one({'ticket': ticket_id})['_id'] # type: ignore
         # dm the user with the message
@@ -105,7 +106,9 @@ class Modmail(commands.Cog):
         embed=embed)
         webhook = await ctx.channel.webhooks()  # type: ignore
         await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
-        if isinstance(ctx, commands.Context):
+        if ctx.message is None:
+            return
+        else:
             await ctx.message.delete()
             await msg.delete()
 
@@ -183,6 +186,10 @@ class Modmail(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def test(self, ctx: commands.Context):
        await ctx.send("Works")
+
+    @app_commands.context_menu()
+    async def react(interaction: discord.Interaction, message: discord.Message):
+     await interaction.response.send_message('Very cool message!', ephemeral=True)
             
 async def setup(bot):
-    await bot.add_cog(Modmail(bot), guilds=[discord.Object(id=884470177176109056)])
+    await bot.add_cog(Modmail(bot))
