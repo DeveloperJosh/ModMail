@@ -1,3 +1,6 @@
+########################################################################
+# NOTE: This file will be deleted as we move to a db that is sql based #
+########################################################################
 from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
