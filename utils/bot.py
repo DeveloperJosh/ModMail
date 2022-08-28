@@ -48,7 +48,7 @@ async def main():
     intents.emojis_and_stickers = True
     intents.bans = True
     intents.webhooks = True
-    ext = ['modmail', 'errors']                                                           # temp password
+    ext = ['modmail', 'errors']
     async with ClientSession() as server_client, asyncpg.create_pool(user="blue", password="Gunner0099", host="raspberrypi", port=5432, command_timeout=30) as pool:
      if pool is None:
         print("It looks like the database connecting.")   
