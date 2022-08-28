@@ -14,13 +14,13 @@ class ModMail(commands.Bot):
     def __init__(
         self,
         *args,
-        initial_extensions: List[str],
+        initial_cogs: List[str],
         testing_guild_id: Optional[int] = None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.testing_guild_id = testing_guild_id
-        self.initial_extensions = initial_extensions
+        self.initial_extensions = initial_cogs
 
     async def setup_hook(self) -> None:
 
@@ -43,5 +43,5 @@ async def main():
     intents.bans = True
     intents.webhooks = True
     ext = ['modmail', 'errors']
-    async with ModMail(command_prefix="!", intents=intents, testing_guild_id=884470177176109056, initial_extensions=ext, help_command=None) as bot:
+    async with ModMail(command_prefix="!", intents=intents, testing_guild_id=884470177176109056, initial_cogs=ext, help_command=None) as bot:
      await bot.start(os.getenv("DISCORD_TOKEN"), reconnect=True)
