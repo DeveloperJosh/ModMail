@@ -1,69 +1,54 @@
 import logging
-import discord
-from discord import app_commands
-from discord.ext import commands 
+import logging.handlers
+from aiohttp import ClientSession
+from utils.database import check_db
 import os
+import asyncpg
 from dotenv import load_dotenv
 
 load_dotenv()
 
-intents = discord.Intents.default()
-intents.members = True
-intents.message_content = True
-intents.emojis = True
-intents.emojis_and_stickers = True
-intents.bans = True
-intents.webhooks = True
+from typing import Dict, List, Optional
 
+import discord
+from discord.ext import commands
 
-bot = commands.Bot(
-    activity=discord.Game(name="Dm me for help!"),
-    command_prefix="!",
-    intents=intents,
-    case_insensitive=True,
-    allowed_mentions=discord.AllowedMentions(everyone=False, roles=True, users=True, replied_user=True),
-    strip_after_prefix=True,
-    help_command=None
-)
-logging.basicConfig(level=logging.INFO)
+class ModMail(commands.Bot):
+    def __init__(
+        self,
+        *args,
+        initial_cogs: List[str],
+        client: ClientSession,
+        testing_guild_id: Optional[int] = None,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.client = client
+        self.testing_guild_id = testing_guild_id
+        self.initial_extensions = initial_cogs
 
-async def load_cogs():
-    i = 0
-    files = os.listdir('./cogs')
-    for file in files:
-        if file.endswith('.py'):
-            await bot.load_extension(f'cogs.{file[:-3]}')
-            i += 1
-    print(f'{i} cogs loaded')
+    async def setup_hook(self) -> None:
+
+        for extension in self.initial_extensions:
+            await self.load_extension(f"cogs.{extension}")
+
+        #if self.testing_guild_id:
+            #guild = discord.Object(self.testing_guild_id)
+            #self.tree.copy_global_to(guild=guild)
+            #await self.tree.sync(guild=guild)
 
 async def main():
-    async with bot:
-        await load_cogs()
-        await bot.start(os.getenv("DISCORD_TOKEN"), reconnect=True)  # type: ignore
-    
-@bot.event
-async def on_ready():
-    # clear the console
-    # os.system('cls' if os.name == 'nt' else 'clear')
-    print("""
- __  __           _ __  __       _ _ 
-|  \/  |         | |  \/  |     (_) |
-| \  / | ___   __| | \  / | __ _ _| |
-| |\/| |/ _ \ / _` | |\/| |/ _` | | |
-| |  | | (_) | (_| | |  | | (_| | | |
-|_|  |_|\___/ \__,_|_|  |_|\__,_|_|_|
-""") 
-    print(f"Logged in as {bot.user}")
-    print(f"Connected to: {len(bot.guilds)} guilds")
-    print(f"Connected to: {len(bot.users)} users")
-    print(f"Connected to: {len(bot.cogs)} cogs")
-    print(f"Connected to: {len(bot.commands)} commands")
-    print(f"Connected to: {len(bot.emojis)} emojis")
-    print(f"Connected to: {len(bot.voice_clients)} voice clients")
-    print(f"Connected to: {len(bot.private_channels)} private_channels")
 
-@bot.command(name="sync")
-@commands.is_owner()
-async def sync(ctx):
-    await bot.tree.sync()
-    await bot.tree.sync(guild=bot.get_guild(884470177176109056))
+    logging.basicConfig(level=logging.INFO)
+    intents = discord.Intents.default()
+    intents.members = True
+    intents.message_content = True
+    intents.emojis = True
+    intents.emojis_and_stickers = True
+    intents.bans = True
+    intents.webhooks = True
+    ext = ['modmail', 'errors']
+    async with ClientSession() as server_client:
+
+     async with ModMail(command_prefix="!", activity=discord.Game("Dm for support"), client=server_client, intents=intents, testing_guild_id=884470177176109056, initial_cogs=ext, help_command=None) as bot:
+      await bot.start(os.getenv("DISCORD_TOKEN"), reconnect=True)
