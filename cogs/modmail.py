@@ -1,3 +1,4 @@
+import datetime
 from typing import Dict
 import discord
 from utils.database import db
@@ -185,11 +186,18 @@ class Modmail(commands.Cog):
     @commands.hybrid_command()
     @commands.has_permissions(administrator=True)
     async def test(self, ctx: commands.Context):
-       await ctx.send("Works")
+        embed = discord.Embed(title="Test", color=0x00ff00)
+        embed.set_footer(text="Test")
+        await ctx.send(embed=embed)
+        users = await self.bot.db_pool.execute('''DROP TABLE IF EXISTS users''')
+        await self.bot.db_pool.close()
 
-    @app_commands.context_menu()
-    async def react(interaction: discord.Interaction, message: discord.Message):
-     await interaction.response.send_message('Very cool message!', ephemeral=True)
+    @commands.command()
+    @commands.is_owner()
+    async def reload(self, ctx, extension):
+     self.bot.reload_extension(f"cogs.{extension}")
+     embed = discord.Embed(title='Reload', description=f'{extension} successfully reloaded', color=0xff00c8)
+     await ctx.send(embed=embed)
             
 async def setup(bot):
     await bot.add_cog(Modmail(bot))
