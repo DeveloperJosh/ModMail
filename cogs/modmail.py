@@ -150,7 +150,7 @@ class Modmail(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.bot_has_permissions(administrator=True)
+    @commands.bot_has_permissions(manage_channels=True)
     @commands.has_permissions(administrator=True)
     async def setup(self, ctx):
         if not db.servers.find_one({'_id': ctx.guild.id}):
