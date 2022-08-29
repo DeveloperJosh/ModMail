@@ -1,6 +1,6 @@
-########################################################################
-# NOTE: This file will be deleted as we move to a db that is sql based #
-########################################################################
+##############################################################################################
+# NOTE: This file will be updated a lot in the future so please make sure to stay up to date #
+##############################################################################################
 import motor.motor_asyncio
 import os
 from dotenv import load_dotenv
