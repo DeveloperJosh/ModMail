@@ -1,9 +1,7 @@
 import logging
 import logging.handlers
 from aiohttp import ClientSession
-from utils.database import check_db
 import os
-import asyncpg
 from dotenv import load_dotenv
 
 load_dotenv()

@@ -114,21 +114,27 @@ class Modmail(commands.Cog):
             await ctx.message.delete()
             await msg.delete()
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     async def areply(self, ctx, *, message):
-        await ctx.message.delete()
+        msg = await ctx.send("Send reply", ephemeral=True)
         ticket_id = ctx.channel.id
-        user_id = db.users.find_one({'ticket': ticket_id})['_id'] # type: ignore
-        # dm the user with the message 
+        data = await db.users.find_one({'ticket': ticket_id})
+        user_id = data['_id'] # type: ignore
+        # dm the user with the message
         user = self.bot.get_user(user_id)
-        embed = discord.Embed(title="Ticket Reply", description=f"Message: {message}", color=0x00ff00)
-        embed.set_footer(text="Modmail")
-        await user.send(embed=embed)
-        webhook = await ctx.channel.webhooks()
-        await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url)
-        print(f"{ctx.author.name} sent a message to {ctx.channel.name}")
+        embed = discord.Embed().set_author(name="Ticket Reply").set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
+        await user.send(message,
+        files=[await attachment.to_file() for attachment in ctx.message.attachments],
+        embed=embed)
+        webhook = await ctx.channel.webhooks()  # type: ignore
+        await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
+        if ctx.message is None:
+            return
+        else:
+            await ctx.message.delete()
+            await msg.delete()
 
     @commands.command()
     @commands.guild_only()
@@ -183,7 +189,7 @@ class Modmail(commands.Cog):
         embed.add_field(name="Commands", value="```\nping - pong\nreply - reply to a ticket\nareply - reply anonymously to a ticket\nclose - close a ticket\nhelp - this help message\nsetup - sets up the server\nreset - removes all data from teh db```", inline=False)
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)
-        
+
     @commands.command()
     @commands.is_owner()
     async def reload(self, ctx, extension):
