@@ -1,13 +1,13 @@
 import logging
 import logging.handlers
 from aiohttp import ClientSession
-import asyncpg
 import os
+import asyncpg
 from dotenv import load_dotenv
 
 load_dotenv()
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import discord
 from discord.ext import commands
@@ -18,13 +18,13 @@ class ModMail(commands.Bot):
         *args,
         initial_cogs: List[str],
         client: ClientSession,
-        db_pool: asyncpg.Pool,
+        db: asyncpg.Pool,
         testing_guild_id: Optional[int] = None,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        self.db_pool = db_pool
         self.client = client
+        self.db = db
         self.testing_guild_id = testing_guild_id
         self.initial_extensions = initial_cogs
 
@@ -49,6 +49,6 @@ async def main():
     intents.bans = True
     intents.webhooks = True
     ext = ['modmail', 'errors']
-    async with ClientSession() as server_client, asyncpg.create_pool(user="blue", port=5432, password="Gunner0099", database="blue", host="raspberrypi") as pool:
-     async with ModMail(command_prefix="!", activity=discord.Game("Dm for support"), db_pool=pool, client=server_client, intents=intents, testing_guild_id=884470177176109056, initial_cogs=ext, help_command=None) as bot:
+    async with ClientSession() as server_client, await  asyncpg.create_pool(user='blue', password='Gunner0099', host='192.168.1.27', command_timeout=30) as pool:
+     async with ModMail(command_prefix="!", activity=discord.Game("Dm for support"), db=pool, client=server_client, intents=intents, testing_guild_id=884470177176109056, initial_cogs=ext, help_command=None) as bot:
       await bot.start(os.getenv("DISCORD_TOKEN"), reconnect=True)

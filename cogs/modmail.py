@@ -186,11 +186,10 @@ class Modmail(commands.Cog):
     @commands.hybrid_command()
     @commands.has_permissions(administrator=True)
     async def test(self, ctx: commands.Context):
+        await self.bot.db.execute("CREATE TABLE customers (name VARCHAR(255), address VARCHAR(255))")
         embed = discord.Embed(title="Test", color=0x00ff00)
         embed.set_footer(text="Test")
         await ctx.send(embed=embed)
-        users = await self.bot.db_pool.execute('''DROP TABLE IF EXISTS users''')
-        await self.bot.db_pool.close()
 
     @commands.command()
     @commands.is_owner()
