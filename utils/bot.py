@@ -51,4 +51,5 @@ async def main():
     ext = ['modmail', 'errors']
     async with ClientSession() as server_client, await  asyncpg.create_pool(user='blue', password='Gunner0099', host='192.168.1.27', command_timeout=30) as pool:
      async with ModMail(command_prefix="!", activity=discord.Game("Dm for support"), db=pool, client=server_client, intents=intents, testing_guild_id=884470177176109056, initial_cogs=ext, help_command=None) as bot:
+      await bot.db.execute("CREATE TABLE IF NOT EXISTS Guilds (guild_id BIGINT, guild_name TEXT, guild_staff_role BIGINT, guild_ticket_category BIGINT );")
       await bot.start(os.getenv("DISCORD_TOKEN"), reconnect=True)

@@ -186,7 +186,8 @@ class Modmail(commands.Cog):
     @commands.hybrid_command()
     @commands.has_permissions(administrator=True)
     async def test(self, ctx: commands.Context):
-        await self.bot.db.execute("CREATE TABLE customers (name VARCHAR(255), address VARCHAR(255))")
+        await self.bot.db.execute(f"""INSERT INTO Guilds 
+        VALUES ({ctx.guild.id}, '{ctx.guild.name}', 75495989834934, 7859484598);""")
         embed = discord.Embed(title="Test", color=0x00ff00)
         embed.set_footer(text="Test")
         await ctx.send(embed=embed)
