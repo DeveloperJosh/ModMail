@@ -1,6 +1,7 @@
 import logging
 import logging.handlers
 from aiohttp import ClientSession
+from utils.database import check_db
 import os
 import asyncpg
 from dotenv import load_dotenv
@@ -53,4 +54,5 @@ async def main():
      async with ModMail(command_prefix="!", activity=discord.Game("Dm for support"), db=pool, client=server_client, intents=intents, testing_guild_id=884470177176109056, initial_cogs=ext, help_command=None) as bot:
       await bot.db.execute("CREATE TABLE IF NOT EXISTS Guilds (guild_id BIGINT, guild_name TEXT, guild_staff_role BIGINT, guild_ticket_category BIGINT );")
       await bot.db.execute("CREATE TABLE IF NOT EXISTS Users (user_id BIGINT, user_guild BIGINT, user_ticket BIGINT);")
+      check_db
       await bot.start(os.getenv("DISCORD_TOKEN"), reconnect=True)
