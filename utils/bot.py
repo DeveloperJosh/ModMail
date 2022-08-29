@@ -49,6 +49,6 @@ async def main():
     intents.bans = True
     intents.webhooks = True
     ext = ['modmail', 'errors']
-    async with ClientSession() as server_client, asyncpg.create_pool(user="blue", database="blue", password="Gunner0099", host="raspberrypi", port=5432, command_timeout=30) as pool:
+    async with ClientSession() as server_client, asyncpg.create_pool(user="blue", port=5432, password="Gunner0099", database="blue", host="raspberrypi") as pool:
      async with ModMail(command_prefix="!", activity=discord.Game("Dm for support"), db_pool=pool, client=server_client, intents=intents, testing_guild_id=884470177176109056, initial_cogs=ext, help_command=None) as bot:
       await bot.start(os.getenv("DISCORD_TOKEN"), reconnect=True)
