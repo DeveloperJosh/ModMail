@@ -183,14 +183,7 @@ class Modmail(commands.Cog):
         embed.add_field(name="Commands", value="```\nping - pong\nreply - reply to a ticket\nareply - reply anonymously to a ticket\nclose - close a ticket\nhelp - this help message\nsetup - sets up the server\nreset - removes all data from teh db```", inline=False)
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)
-
-    @commands.hybrid_command()
-    @commands.has_permissions(administrator=True)
-    async def test(self, ctx: commands.Context):
-        embed = discord.Embed(title="Test", color=0x00ff00)
-        embed.set_footer(text="Test")
-        await ctx.send(embed=embed)
-
+        
     @commands.command()
     @commands.is_owner()
     async def reload(self, ctx, extension):
