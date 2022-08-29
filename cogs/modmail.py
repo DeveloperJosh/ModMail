@@ -60,8 +60,6 @@ class Modmail(commands.Cog):
                 data = await db.servers.find_one({'_id': guild.id})
                 channel = await guild.create_text_channel(name=f"ticket-{message.author.id}", category=guild.get_channel(data['category'])) # type: ignore
                 await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False)
-                #await channel.set_permissions(guild.get_role(self.staff), read_messages=True, send_messages=True)
-                # add channel to db
                 embed = discord.Embed(title="Ticket Open", description=f"You have opened a ticket. Please wait for a staff member to reply.", color=0x00ff00)
                 embed.set_footer(text="Modmail")
                 await message.author.send(embed=embed)
@@ -80,8 +78,9 @@ class Modmail(commands.Cog):
                 await channel.create_webhook(name=message.author.name)
 
             else:
-                guild = self.abot.get_guild(db.users.find_one({'_id': message.author.id})['guild']) # type: ignore
-                channel = guild.get_channel(db.users.find_one({'_id': message.author.id})['ticket']) # type: ignore
+                data = await db.users.find_one({'_id': message.author.id})
+                guild = self.bot.get_guild(data['guild']) # type: ignore
+                channel = guild.get_channel(data['ticket']) # type: ignore
                 webhook_in_channel = await channel.webhooks()
                 webhook = webhook_in_channel[0]
                 files = [await attachment.to_file() for attachment in message.attachments]
@@ -134,14 +133,14 @@ class Modmail(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
-    async def close(self, ctx):
-        id = ctx.message.channel.name.split("-")[1]
-        await db.users.delete_one({'ticket': ctx.channel.id})
-        embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed", color=0x00ff00)
-        embed.set_footer(text="Modmail")
-        user = self.bot.get_user(int(id))
-        await user.send(embed=embed)
-        await ctx.message.channel.delete()
+    async def close(self, ctx, *, reason):
+         id = ctx.message.channel.name.split("-")[1]
+         await db.users.delete_one({'ticket': ctx.channel.id})
+         embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed\nReason: {reason}", color=0x00ff00)
+         embed.set_footer(text="Modmail")
+         user = self.bot.get_user(int(id))
+         await user.send(embed=embed)
+         await ctx.message.channel.delete()
 
     @commands.command()
     @commands.guild_only()
@@ -188,8 +187,6 @@ class Modmail(commands.Cog):
     @commands.hybrid_command()
     @commands.has_permissions(administrator=True)
     async def test(self, ctx: commands.Context):
-        await self.bot.db.execute(f"""INSERT INTO Guilds 
-        VALUES ({ctx.guild.id}, '{ctx.guild.name}', 75495989834934, 7859484598);""")
         embed = discord.Embed(title="Test", color=0x00ff00)
         embed.set_footer(text="Test")
         await ctx.send(embed=embed)
