@@ -14,4 +14,4 @@ I'm making this bot to replace my modmail [MailHook](https://github.com/Develope
 ## Authors
 
 - [@DeveloperJosh](https://www.github.com/developerjosh)
-
+- Free spot for collaborators.
