@@ -153,15 +153,18 @@ class Modmail(commands.Cog):
     @commands.bot_has_permissions(manage_channels=True)
     @commands.has_permissions(administrator=True)
     async def setup(self, ctx):
-        if not db.servers.find_one({'_id': ctx.guild.id}):
+        if not await db.servers.find_one({'_id': ctx.guild.id}):
              category = await ctx.guild.create_category(name="Tickets")
              role = await ctx.guild.create_role(name="Ticket Support")
-             await category.set_permissions(ctx.guild.default_role, read_messages=False, send_messages=False)
-             await category.set_permissions(ctx.guild.get_role(role.id), read_messages=True, send_messages=True)
+             if role.position >= ctx.guild.me.top_role.position:
+              return await ctx.send("Please give me a higher role position")
              await db.servers.insert_one({'_id': ctx.guild.id, 'category': category.id, "staff_role": role.id})
              embed = discord.Embed(title="Setup", description=f"Okay I know you didn't get to pick this stuff but that is coming soon\nCategory: {category.name}\nSupport Role: {role.name}", color=0x00ff00)
              embed.set_footer(text="Modmail")
              await ctx.send(embed=embed)
+             await category.set_permissions(ctx.guild.me, read_messages=True, send_messages=True)
+             await category.set_permissions(ctx.guild.default_role, read_messages=False, send_messages=False)
+             await category.set_permissions(ctx.guild.get_role(role.id), read_messages=True, send_messages=True)
         else:
             embed = discord.Embed(title="Setup Complete", description=f"The server {ctx.guild.name} has already been setup.", color=0x00ff00)
             embed.set_footer(text="Modmail")
