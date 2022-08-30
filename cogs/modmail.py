@@ -102,8 +102,10 @@ class Modmail(commands.Cog):
         user_id = data['_id'] # type: ignore
         # dm the user with the message
         user = self.bot.get_user(user_id)
-        embed = discord.Embed().set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url).set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
-        await user.send(message,
+        #embed = discord.Embed().set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url).set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
+        embed = discord.Embed(title=ctx.message.author.name, description=f"**{message}**", color=0x00ff00)
+        embed.set_footer(text=f"Server: {ctx.guild.name}")
+        await user.send(
         files=[await attachment.to_file() for attachment in ctx.message.attachments],
         embed=embed)
         webhook = await ctx.channel.webhooks()  # type: ignore
@@ -199,6 +201,49 @@ class Modmail(commands.Cog):
      await self.bot.reload_extension(f"cogs.{extension}")
      embed = discord.Embed(title='Reload', description=f'{extension} successfully reloaded', color=0xff00c8)
      await ctx.send(embed=embed)
+
+    @commands.group(invoke_without_command=False)
+    @commands.guild_only()
+    async def tag(self, ctx):
+        pass
+
+    @tag.command()
+    async def help(self, ctx):
+        embed = discord.Embed(title="Help", description="```\ntag set [name] ['text']\ntag use [name]```", color=0xff00c8)
+        await ctx.send(embed=embed)
+
+    @tag.command()
+    async def set(self, ctx, name, text):
+        if name is None:
+            await ctx.send("Please pick a name")
+        elif text is None:
+            await ctx.send("Please put what the bot will say to the user when the tag ")
+        else:
+            try:
+                await db.commands.insert_one({"_id": ctx.guild.id, "command": f"{name}", "text": f"{text}"})
+                embed = discord.Embed(title="Command Set", description=f"Name: {name}\nText: {text}")
+                await ctx.send(embed=embed)
+            except:
+                await ctx.send("Error")
+
+    @tag.command()
+    async def use(self, ctx, name):
+        if name is None:
+            await ctx.send("Please enter a command name.")
+        else:
+           try:
+            command = await db.commands.find_one({"command": name})
+            text = command["text"]
+            ticket_id = ctx.channel.id
+            data = await db.users.find_one({'ticket': ticket_id})
+            user_id = data['_id'] # type: ignore
+            user = self.bot.get_user(user_id)
+            await user.send(f"{text}")
+            webhook = await ctx.channel.webhooks()  # type: ignore
+            await webhook[0].send(text, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
+           except:
+            await ctx.send(f"It looks like the command {name} is not working or does not exist.")
+
             
 async def setup(bot):
     await bot.add_cog(Modmail(bot))
