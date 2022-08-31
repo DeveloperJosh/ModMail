@@ -1,10 +1,9 @@
-import datetime
 from typing import Dict
 import discord
 from utils.database import db
-from discord import app_commands
 from discord.ext import commands
 from utils.dropdown import ServersDropdown, ServersDropdownView, Confirm
+from utils.message import wait_for_msg
 
 dropdown_concurrency = []
 
@@ -126,8 +125,9 @@ class Modmail(commands.Cog):
         user_id = data['_id'] # type: ignore
         # dm the user with the message
         user = self.bot.get_user(user_id)
-        embed = discord.Embed().set_author(name="Ticket Reply").set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
-        await user.send(message,
+        embed = discord.Embed(title="Ticket Reply", description=f"**{message}**", color=0x00ff00)
+        embed.set_footer(text=f"Server: {ctx.guild.name}")
+        await user.send(
         files=[await attachment.to_file() for attachment in ctx.message.attachments],
         embed=embed)
         webhook = await ctx.channel.webhooks()  # type: ignore
@@ -141,7 +141,16 @@ class Modmail(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
-    async def close(self, ctx, *, reason):
+    async def close(self, ctx, *, reason=None):
+        if reason is None:
+         id = ctx.message.channel.name.split("-")[1]
+         await db.users.delete_one({'ticket': ctx.channel.id})
+         embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed", color=0x00ff00)
+         embed.set_footer(text="Modmail")
+         user = self.bot.get_user(int(id))
+         await user.send(embed=embed)
+         await ctx.message.channel.delete()
+        else:
          id = ctx.message.channel.name.split("-")[1]
          await db.users.delete_one({'ticket': ctx.channel.id})
          embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed\nReason: {reason}", color=0x00ff00)
@@ -213,18 +222,9 @@ class Modmail(commands.Cog):
         await ctx.send(embed=embed)
 
     @tag.command()
-    async def set(self, ctx, name, text):
-        if name is None:
-            await ctx.send("Please pick a name")
-        elif text is None:
-            await ctx.send("Please put what the bot will say to the user when the tag ")
-        else:
-            try:
-                await db.commands.insert_one({"command": f"{name}", "text": f"{text}"})
-                embed = discord.Embed(title="Command Set", description=f"Name: {name}\nText: {text}", color=0x00ff00)
-                await ctx.send(embed=embed)
-            except:
-                await ctx.send("Error")
+    async def set(self, ctx):
+        settings = {}
+        msg = await ctx.send("What do want the command to be call: ")
 
     @tag.command()
     async def use(self, ctx, name):
@@ -232,7 +232,7 @@ class Modmail(commands.Cog):
             await ctx.send("Please enter a command name.")
         else:
            try:
-            command = await db.commands.find_one({"command": name})
+            command = await db.commands.find_one({"guild": ctx.guild.id, "command": name})
             text = command["text"]
             ticket_id = ctx.channel.id
             data = await db.users.find_one({'ticket': ticket_id})
