@@ -191,7 +191,7 @@ class Modmail(commands.Cog):
     @commands.guild_only()
     async def help(self, ctx):
         embed = discord.Embed(title="Modmail", description="Modmail is a bot that allows you to send messages to staff members in DMs.", color=0x00ff00)
-        embed.add_field(name="Commands", value="```\nping - pong\nreply - reply to a ticket\nareply - reply anonymously to a ticket\nclose - close a ticket\nhelp - this help message\nsetup - sets up the server\nreset - removes all data from teh db```", inline=False)
+        embed.add_field(name="Commands", value="```\nping - pong\nreply - reply to a ticket\nareply - reply anonymously to a ticket\nclose - close a ticket\nhelp - this help message\nsetup - sets up the server\nreset - removes all data from the db```", inline=False)
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)
 
@@ -209,7 +209,7 @@ class Modmail(commands.Cog):
 
     @tag.command()
     async def help(self, ctx):
-        embed = discord.Embed(title="Help", description="```\ntag set [name] ['text']\ntag use [name]```", color=0xff00c8)
+        embed = discord.Embed(title="Help", description="```\ntag set [name] ['text']\ntag use [name]```", color=0x00ff00)
         await ctx.send(embed=embed)
 
     @tag.command()
@@ -220,8 +220,8 @@ class Modmail(commands.Cog):
             await ctx.send("Please put what the bot will say to the user when the tag ")
         else:
             try:
-                await db.commands.insert_one({"_id": ctx.guild.id, "command": f"{name}", "text": f"{text}"})
-                embed = discord.Embed(title="Command Set", description=f"Name: {name}\nText: {text}")
+                await db.commands.insert_one({"command": f"{name}", "text": f"{text}"})
+                embed = discord.Embed(title="Command Set", description=f"Name: {name}\nText: {text}", color=0x00ff00)
                 await ctx.send(embed=embed)
             except:
                 await ctx.send("Error")
