@@ -3,7 +3,7 @@ import discord
 from utils.database import db
 from discord.ext import commands
 from utils.dropdown import ServersDropdown, ServersDropdownView, Confirm
-from utils.message import wait_for_msg
+from utils.exceptions import DMsDisabled, TicketCategoryNotFound
 
 dropdown_concurrency = []
 
@@ -103,13 +103,17 @@ class Modmail(commands.Cog):
         # dm the user with the message
         user = self.bot.get_user(user_id)
         #embed = discord.Embed().set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url).set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
-        embed = discord.Embed(title=ctx.message.author.name, description=f"**{message}**", color=0x00ff00)
+        embed = discord.Embed(description=f"**{message}**", color=0x00ff00)
+        embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url)
         embed.set_footer(text=f"Server: {ctx.guild.name}")
-        await user.send(
-        files=[await attachment.to_file() for attachment in ctx.message.attachments],
-        embed=embed)
-        webhook = await ctx.channel.webhooks()  # type: ignore
-        await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
+        try:
+         await user.send(
+         files=[await attachment.to_file() for attachment in ctx.message.attachments],
+         embed=embed)
+         webhook = await ctx.channel.webhooks()  # type: ignore
+         await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
+        except:
+            raise DMsDisabled(user)
         if ctx.message is None:
             return
         else:

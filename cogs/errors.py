@@ -1,6 +1,12 @@
 import discord
 from discord.ext import commands
 from discord.ext.commands import MissingPermissions, CheckFailure, CommandNotFound, MissingRequiredArgument, BadArgument, MissingRole
+from utils.exceptions import (
+    NotSetup, NotStaff, NotAdmin, ModRoleNotFound,
+    TicketCategoryNotFound, TranscriptChannelNotFound,
+    UserAlreadyInAModmailThread, DMsDisabled, NoBots,
+    GuildOnlyPls
+)
 
 def e(title: str, desc: str) -> discord.Embed:
     return discord.Embed(title=title, description=desc, color=discord.Color.red())
@@ -51,6 +57,16 @@ class ErrorHandling(commands.Cog, name="on command error"):
         elif isinstance(error, BadArgument):
             embed = discord.Embed(title="ERROR!", description=f"{error}")
             await ctx.send(embed=embed)
+        elif isinstance(error, TicketCategoryNotFound):
+            await ctx.reply(embed=e(
+                f"Not Found!",
+                "Uh oh! Looks like the ticket category was not found! Maybe the category was deleted.\nPlease use `?setup` to set a new one."
+            ))
+        elif isinstance(error, DMsDisabled):
+            await ctx.reply(embed=e(
+                f"Unable to DM!",
+                f"I am unable to dm {error.user} because their DMs are disabled.\nPlease ask them to enable their DMs."
+            ))
         else:
             print(f"{error}")
 
