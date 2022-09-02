@@ -261,6 +261,22 @@ class Modmail(commands.Cog):
            except:
             await ctx.send(f"It looks like the command {name} is not working or does not exist.")
 
+    @commands.hybrid_command()
+    @commands.guild_only()
+    async def help(self, ctx):
+        embed = discord.Embed(title="Modmail", description="Modmail is a bot that allows you to send messages to staff members in DMs.", color=0x00ff00)
+        embed.add_field(name="Commands", value="""```
+ping - pong
+reply [message] - reply to a ticket
+areply [message] - reply anonymously to a ticket
+close [reason] - close a ticket
+help - this help message
+setup - sets up the server
+reset - removes all data from the db
+snippet [set, help, use] - Allows you to send preset messages
+```""", inline=False)
+        embed.set_footer(text="Modmail")
+        await ctx.send(embed=embed)
             
 async def setup(bot):
     await bot.add_cog(Modmail(bot))
