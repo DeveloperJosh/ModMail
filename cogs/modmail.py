@@ -206,15 +206,15 @@ class Modmail(commands.Cog):
 
     @commands.group(invoke_without_command=False)
     @commands.guild_only()
-    async def tag(self, ctx):
+    async def snippet(self, ctx):
         pass
 
-    @tag.command()
+    @snippet.command()
     async def help(self, ctx):
-        embed = discord.Embed(title="Help", description="```\ntag set [name] ['text']\ntag use [name]```", color=0x00ff00)
+        embed = discord.Embed(title="Help", description="```\nsnippet set [name] ['text']\nsnippet use [name]```", color=0x00ff00)
         await ctx.send(embed=embed)
 
-    @tag.command()
+    @snippet.command()
     async def set(self, ctx):
      stuff = {}
      await ctx.send("Please enter the name of the tag")
@@ -237,7 +237,7 @@ class Modmail(commands.Cog):
      await db.commands.insert_one({**stuff})
      await ctx.send("Tag set successfully.")
 
-    @tag.command()
+    @snippet.command()
     async def use(self, ctx, name):
         if name is None:
             await ctx.send("Please enter a command name.")
