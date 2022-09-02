@@ -64,6 +64,7 @@ class Modmail(commands.Cog):
                 await message.author.send(embed=embed)
                 embed = discord.Embed(title=f"```User ID: {message.author.id}```", color=discord.Color.blurple())
                 time = message.author.created_at.strftime("%b %d, %Y")
+                embed.add_field(name="User Name", value=message.author.name, inline=False)
                 embed.add_field(name="Account Age", value=f"{time}", inline=False)
                 embed.add_field(name="Message", value=f"{message.content}", inline=True)
                 embed.set_footer(text="Modmail")
@@ -196,14 +197,6 @@ class Modmail(commands.Cog):
             embed.set_footer(text="Modmail")
             await ctx.send(embed=embed)
 
-    @commands.hybrid_command()
-    @commands.guild_only()
-    async def help(self, ctx):
-        embed = discord.Embed(title="Modmail", description="Modmail is a bot that allows you to send messages to staff members in DMs.", color=0x00ff00)
-        embed.add_field(name="Commands", value="```\nping - pong\nreply - reply to a ticket\nareply - reply anonymously to a ticket\nclose - close a ticket\nhelp - this help message\nsetup - sets up the server\nreset - removes all data from the db```", inline=False)
-        embed.set_footer(text="Modmail")
-        await ctx.send(embed=embed)
-
     @commands.command()
     @commands.is_owner()
     async def reload(self, ctx, extension):
@@ -223,8 +216,26 @@ class Modmail(commands.Cog):
 
     @tag.command()
     async def set(self, ctx):
-        settings = {}
-        msg = await ctx.send("What do want the command to be call: ")
+     stuff = {}
+     await ctx.send("Please enter the name of the tag")
+     def check(m):
+        return m.content and m.channel
+
+     msg = await self.bot.wait_for("message", check=check, timeout=60)
+     if not msg:
+        await ctx.send("No message found")
+        return
+     stuff.update({"guild": ctx.guild.id, "command": msg.content})
+     await ctx.send("Please enter what this tag will say.")
+     def check_tag(m):
+        return m.content and m.channel
+     msg_tag = await self.bot.wait_for("message", check=check_tag, timeout=60)
+     if not msg_tag:
+        await ctx.send("No message found")
+        return
+     stuff.update({"text": msg_tag.content})
+     await db.commands.insert_one({**stuff})
+     await ctx.send("Tag set successfully.")
 
     @tag.command()
     async def use(self, ctx, name):
@@ -238,7 +249,9 @@ class Modmail(commands.Cog):
             data = await db.users.find_one({'ticket': ticket_id})
             user_id = data['_id'] # type: ignore
             user = self.bot.get_user(user_id)
-            await user.send(f"{text}")
+            embed = discord.Embed(title="Ticket Reply", description=f"**{text}**", color=0x00ff00)
+            embed.set_footer(text=f"Server: {ctx.guild.name}")
+            await user.send(embed=embed)
             webhook = await ctx.channel.webhooks()  # type: ignore
             await webhook[0].send(text, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
            except:
