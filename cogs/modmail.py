@@ -3,7 +3,7 @@ import discord
 from utils.database import db
 from discord.ext import commands
 from utils.dropdown import ServersDropdown, ServersDropdownView, Confirm
-from utils.exceptions import DMsDisabled, TicketCategoryNotFound
+from utils.exceptions import DMsDisabled
 
 dropdown_concurrency = []
 
