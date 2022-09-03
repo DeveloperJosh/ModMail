@@ -1,10 +1,9 @@
-import datetime
 from typing import Dict
 import discord
 from utils.database import db
-from discord import app_commands
 from discord.ext import commands
 from utils.dropdown import ServersDropdown, ServersDropdownView, Confirm
+from utils.exceptions import DMsDisabled
 
 dropdown_concurrency = []
 
@@ -65,6 +64,7 @@ class Modmail(commands.Cog):
                 await message.author.send(embed=embed)
                 embed = discord.Embed(title=f"```User ID: {message.author.id}```", color=discord.Color.blurple())
                 time = message.author.created_at.strftime("%b %d, %Y")
+                embed.add_field(name="User Name", value=message.author.name, inline=False)
                 embed.add_field(name="Account Age", value=f"{time}", inline=False)
                 embed.add_field(name="Message", value=f"{message.content}", inline=True)
                 embed.set_footer(text="Modmail")
@@ -102,12 +102,18 @@ class Modmail(commands.Cog):
         user_id = data['_id'] # type: ignore
         # dm the user with the message
         user = self.bot.get_user(user_id)
-        embed = discord.Embed().set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url).set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
-        await user.send(message,
-        files=[await attachment.to_file() for attachment in ctx.message.attachments],
-        embed=embed)
-        webhook = await ctx.channel.webhooks()  # type: ignore
-        await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
+        #embed = discord.Embed().set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url).set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
+        embed = discord.Embed(description=f"**{message}**", color=0x00ff00)
+        embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url)
+        embed.set_footer(text=f"Server: {ctx.guild.name}")
+        try:
+         await user.send(
+         files=[await attachment.to_file() for attachment in ctx.message.attachments],
+         embed=embed)
+         webhook = await ctx.channel.webhooks()  # type: ignore
+         await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
+        except:
+            raise DMsDisabled(user)
         if ctx.message is None:
             return
         else:
@@ -124,8 +130,9 @@ class Modmail(commands.Cog):
         user_id = data['_id'] # type: ignore
         # dm the user with the message
         user = self.bot.get_user(user_id)
-        embed = discord.Embed().set_author(name="Ticket Reply").set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
-        await user.send(message,
+        embed = discord.Embed(title="Ticket Reply", description=f"**{message}**", color=0x00ff00)
+        embed.set_footer(text=f"Server: {ctx.guild.name}")
+        await user.send(
         files=[await attachment.to_file() for attachment in ctx.message.attachments],
         embed=embed)
         webhook = await ctx.channel.webhooks()  # type: ignore
@@ -139,7 +146,16 @@ class Modmail(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
-    async def close(self, ctx, *, reason):
+    async def close(self, ctx, *, reason=None):
+        if reason is None:
+         id = ctx.message.channel.name.split("-")[1]
+         await db.users.delete_one({'ticket': ctx.channel.id})
+         embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed", color=0x00ff00)
+         embed.set_footer(text="Modmail")
+         user = self.bot.get_user(int(id))
+         await user.send(embed=embed)
+         await ctx.message.channel.delete()
+        else:
          id = ctx.message.channel.name.split("-")[1]
          await db.users.delete_one({'ticket': ctx.channel.id})
          embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed\nReason: {reason}", color=0x00ff00)
@@ -150,18 +166,21 @@ class Modmail(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.bot_has_permissions(administrator=True)
+    @commands.bot_has_permissions(manage_channels=True)
     @commands.has_permissions(administrator=True)
     async def setup(self, ctx):
-        if not db.servers.find_one({'_id': ctx.guild.id}):
+        if not await db.servers.find_one({'_id': ctx.guild.id}):
              category = await ctx.guild.create_category(name="Tickets")
              role = await ctx.guild.create_role(name="Ticket Support")
-             await category.set_permissions(ctx.guild.default_role, read_messages=False, send_messages=False)
-             await category.set_permissions(ctx.guild.get_role(role.id), read_messages=True, send_messages=True)
+             if role.position >= ctx.guild.me.top_role.position:
+              return await ctx.send("Please give me a higher role position")
              await db.servers.insert_one({'_id': ctx.guild.id, 'category': category.id, "staff_role": role.id})
              embed = discord.Embed(title="Setup", description=f"Okay I know you didn't get to pick this stuff but that is coming soon\nCategory: {category.name}\nSupport Role: {role.name}", color=0x00ff00)
              embed.set_footer(text="Modmail")
              await ctx.send(embed=embed)
+             await category.set_permissions(ctx.guild.me, read_messages=True, send_messages=True)
+             await category.set_permissions(ctx.guild.default_role, read_messages=False, send_messages=False)
+             await category.set_permissions(ctx.guild.get_role(role.id), read_messages=True, send_messages=True)
         else:
             embed = discord.Embed(title="Setup Complete", description=f"The server {ctx.guild.name} has already been setup.", color=0x00ff00)
             embed.set_footer(text="Modmail")
@@ -182,20 +201,82 @@ class Modmail(commands.Cog):
             embed.set_footer(text="Modmail")
             await ctx.send(embed=embed)
 
-    @commands.hybrid_command()
-    @commands.guild_only()
-    async def help(self, ctx):
-        embed = discord.Embed(title="Modmail", description="Modmail is a bot that allows you to send messages to staff members in DMs.", color=0x00ff00)
-        embed.add_field(name="Commands", value="```\nping - pong\nreply - reply to a ticket\nareply - reply anonymously to a ticket\nclose - close a ticket\nhelp - this help message\nsetup - sets up the server\nreset - removes all data from teh db```", inline=False)
-        embed.set_footer(text="Modmail")
-        await ctx.send(embed=embed)
-
     @commands.command()
     @commands.is_owner()
     async def reload(self, ctx, extension):
      await self.bot.reload_extension(f"cogs.{extension}")
      embed = discord.Embed(title='Reload', description=f'{extension} successfully reloaded', color=0xff00c8)
      await ctx.send(embed=embed)
+
+    @commands.group(invoke_without_command=False)
+    @commands.guild_only()
+    async def snippet(self, ctx):
+        pass
+
+    @snippet.command()
+    async def help(self, ctx):
+        embed = discord.Embed(title="Help", description="```\nsnippet set [name] ['text']\nsnippet use [name]```", color=0x00ff00)
+        await ctx.send(embed=embed)
+
+    @snippet.command()
+    async def set(self, ctx):
+     stuff = {}
+     await ctx.send("Please enter the name of the tag")
+     def check(m):
+        return m.content and m.channel
+
+     msg = await self.bot.wait_for("message", check=check, timeout=60)
+     if not msg:
+        await ctx.send("No message found")
+        return
+     stuff.update({"guild": ctx.guild.id, "command": msg.content})
+     await ctx.send("Please enter what this tag will say.")
+     def check_tag(m):
+        return m.content and m.channel
+     msg_tag = await self.bot.wait_for("message", check=check_tag, timeout=60)
+     if not msg_tag:
+        await ctx.send("No message found")
+        return
+     stuff.update({"text": msg_tag.content})
+     await db.commands.insert_one({**stuff})
+     await ctx.send("Tag set successfully.")
+
+    @snippet.command()
+    async def use(self, ctx, name):
+        if name is None:
+            await ctx.send("Please enter a command name.")
+        else:
+           try:
+            command = await db.commands.find_one({"guild": ctx.guild.id, "command": name})
+            text = command["text"]
+            ticket_id = ctx.channel.id
+            data = await db.users.find_one({'ticket': ticket_id})
+            user_id = data['_id'] # type: ignore
+            user = self.bot.get_user(user_id)
+            embed = discord.Embed(title="Ticket Reply", description=f"**{text}**", color=0x00ff00)
+            embed.set_footer(text=f"Server: {ctx.guild.name}")
+            await user.send(embed=embed)
+            webhook = await ctx.channel.webhooks()  # type: ignore
+            await webhook[0].send(text, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
+           except:
+            await ctx.send(f"It looks like the command {name} is not working or does not exist.")
+
+    @commands.hybrid_command()
+    @commands.guild_only()
+    async def help(self, ctx):
+        embed = discord.Embed(title="Modmail", description="Modmail is a bot that allows you to send messages to staff members in DMs.", color=0x00ff00)
+        embed.add_field(name="Commands", value="""```
+ping - pong
+reply [message] - reply to a ticket
+areply [message] - reply anonymously to a ticket
+close [reason] - close a ticket
+help - this help message
+setup - sets up the server
+reset - removes all data from the db
+snippet [set, help, use] - Allows you to send preset messages
+```""", inline=False)
+        embed.set_footer(text="Modmail")
+        await ctx.send(embed=embed)
             
 async def setup(bot):
     await bot.add_cog(Modmail(bot))
