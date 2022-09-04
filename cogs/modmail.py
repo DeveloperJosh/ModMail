@@ -59,7 +59,8 @@ class Modmail(commands.Cog):
                 data = await db.servers.find_one({'_id': guild.id})
                 channel = await guild.create_text_channel(name=f"ticket-{message.author.id}", category=guild.get_channel(data['category'])) # type: ignore
                 await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False)
-                await channel.set_permissions(data['staff_role'], read_messages=True, send_messages=True)
+                role = guild.get_role(data['staff_role'])
+                await channel.set_permissions(role, read_messages=True, send_messages=True)
                 embed = discord.Embed(title="Ticket Open", description=f"You have opened a ticket. Please wait for a staff member to reply.", color=0x00ff00)
                 embed.set_footer(text="Modmail")
                 await message.author.send(embed=embed)
