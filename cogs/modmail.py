@@ -283,20 +283,6 @@ snippet [set, help, use] - Allows you to send preset messages
 ```""", inline=False)
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)
-
-    @commands.command()
-    @commands.guild_only()
-    @commands.is_owner()
-    async def block(self, ctx):
-        await ctx.send("Please enter the user id.")
-        def check(m):
-            return m.content and m.channel
-        msg = await self.bot.wait_for("message", check=check, timeout=60)
-        if not msg:
-            await ctx.send("No message found")
-            return
-        await db.blocked.insert_one({'_id': msg.content})
-        await ctx.send("User blocked successfully.")
             
 async def setup(bot):
     await bot.add_cog(Modmail(bot))
