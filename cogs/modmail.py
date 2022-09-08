@@ -17,6 +17,12 @@ class Modmail(commands.Cog):
         if message.author.bot:
             return
         if message.channel.type == discord.ChannelType.private:
+            if message.author.id is await db.blocked.find_one({"_id": message.author.id}):
+             await message.channel.send("You are blocked from using this bot.", delete_after=5)
+             return
+            else:
+                pass
+
             if not await db.users.find_one({'_id': message.author.id}):
 
               mutual_guilds = message.author.mutual_guilds
@@ -107,7 +113,7 @@ class Modmail(commands.Cog):
         #embed = discord.Embed().set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url).set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
         embed = discord.Embed(description=f"**{message}**", color=0x00ff00)
         embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url)
-        embed.set_footer(text=f"Server: {ctx.guild.name}")
+        embed.set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
         try:
          await user.send(
          files=[await attachment.to_file() for attachment in ctx.message.attachments],
@@ -216,7 +222,7 @@ class Modmail(commands.Cog):
         pass
 
     @snippet.command()
-    async def help(self, ctx):
+    async def help(self, ctx):  # type: ignore
         embed = discord.Embed(title="Help", description="```\nsnippet set [name] ['text']\nsnippet use [name]```", color=0x00ff00)
         await ctx.send(embed=embed)
 
@@ -233,9 +239,7 @@ class Modmail(commands.Cog):
         return
      stuff.update({"guild": ctx.guild.id, "command": msg.content})
      await ctx.send("Please enter what this tag will say.")
-     def check_tag(m):
-        return m.content and m.channel
-     msg_tag = await self.bot.wait_for("message", check=check_tag, timeout=60)
+     msg_tag = await self.bot.wait_for("message", check=check, timeout=60)
      if not msg_tag:
         await ctx.send("No message found")
         return
@@ -279,6 +283,20 @@ snippet [set, help, use] - Allows you to send preset messages
 ```""", inline=False)
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.is_owner()
+    async def block(self, ctx):
+        await ctx.send("Please enter the user id.")
+        def check(m):
+            return m.content and m.channel
+        msg = await self.bot.wait_for("message", check=check, timeout=60)
+        if not msg:
+            await ctx.send("No message found")
+            return
+        await db.blocked.insert_one({'_id': msg.content})
+        await ctx.send("User blocked successfully.")
             
 async def setup(bot):
     await bot.add_cog(Modmail(bot))
