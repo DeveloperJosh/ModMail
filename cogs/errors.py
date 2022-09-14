@@ -70,7 +70,5 @@ class ErrorHandling(commands.Cog, name="on command error"):
         else:
             print(f"{error}")
 
-
-
 async def setup(bot):
     await bot.add_cog(ErrorHandling(bot=bot))

@@ -85,7 +85,6 @@ class Modmail(commands.Cog):
                 await channel.create_webhook(name=message.author.name)
 
             else:
-                #data = await db.users.find_one({'_id': message.author.id})
                 data = await self.db.find_user(message.author.id)
                 guild = self.bot.get_guild(data['guild']) # type: ignore
                 channel = guild.get_channel(data['ticket']) # type: ignore
@@ -172,7 +171,6 @@ class Modmail(commands.Cog):
              role = await ctx.guild.create_role(name="Ticket Support")
              if role.position >= ctx.guild.me.top_role.position:
               return await ctx.send("Please give me a higher role position")
-             #await db.servers.insert_one({'_id': ctx.guild.id, 'category': category.id, "staff_role": role.id})
              await self.db.create_server(ctx.guild.id, {'category': category.id, "staff_role": role.id})
              embed = discord.Embed(title="Setup", description=f"Okay I know you didn't get to pick this stuff but that is coming soon\nCategory: {category.name}\nSupport Role: {role.name}", color=0x00ff00)
              embed.set_footer(text="Modmail")
@@ -218,7 +216,8 @@ class Modmail(commands.Cog):
     @commands.guild_only()
     async def help(self, ctx):
         embed = discord.Embed(title="Modmail", description="Modmail is a bot that allows you to send messages to staff members in DMs.", color=0x00ff00)
-        embed.add_field(name="Commands", value="""```
+        embed.add_field(name="Commands", value="""
+```
 ping - pong
 reply [message] - reply to a ticket
 areply [message] - reply anonymously to a ticket

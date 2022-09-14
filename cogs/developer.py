@@ -39,7 +39,6 @@ class Developer(commands.Cog):
         except Exception as e:
             await ctx.send(e)
             print(e)
-
             
 async def setup(bot):
     await bot.add_cog(Developer(bot))

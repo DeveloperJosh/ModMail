@@ -12,12 +12,9 @@ class Snippet(commands.Cog):
     @commands.group(invoke_without_command=False)
     @commands.guild_only()
     async def snippet(self, ctx):
-        pass
-
-    @snippet.command()
-    async def help(self, ctx):  # type: ignore
-        embed = discord.Embed(title="Help", description="```\nsnippet set [name] ['text']\nsnippet use [name]```", color=0x00ff00)
-        await ctx.send(embed=embed)
+        if ctx.invoked_subcommand is None:
+          embed = discord.Embed(title="Help", description="```\nsnippet set [name] ['text']\nsnippet use [name]```", color=0x00ff00)
+          await ctx.send(embed=embed)
 
     @snippet.command()
     async def set(self, ctx):
