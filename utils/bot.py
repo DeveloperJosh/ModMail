@@ -45,7 +45,7 @@ async def main():
     intents.emojis_and_stickers = True
     intents.bans = True
     intents.webhooks = True
-    ext = ['modmail', 'errors']
+    ext = ['modmail', 'errors', 'developer', 'config', 'snippet']
     async with ClientSession() as server_client:
      async with ModMail(command_prefix="?", activity=discord.Game("Dm for support"), help_command=None, client=server_client, intents=intents, testing_guild_id=884470177176109056, initial_cogs=ext) as bot:
       await bot.start(os.getenv("DISCORD_TOKEN"), reconnect=True)  # type: ignore

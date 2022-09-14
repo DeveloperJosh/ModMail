@@ -1,6 +1,6 @@
-##############################################################################################
-# NOTE: This file will be updated a lot in the future so please make sure to stay up to date #
-##############################################################################################
+####################################################################
+# NOTE: This file is now deprecated. Please use the new db.py file #
+####################################################################
 import motor.motor_asyncio
 import os
 from dotenv import load_dotenv

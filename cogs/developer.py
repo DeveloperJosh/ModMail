@@ -1,39 +1,45 @@
 from typing import Dict
 import discord
-from utils.database import db
+from utils.db import Database
 from discord.ext import commands
 
 class Developer(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.db = Database()
 
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
-    async def block(self, ctx):
-        await ctx.send("Please enter the user id.")
-        def check(m):
-            return m.content and m.channel
-        msg = await self.bot.wait_for("message", check=check, timeout=60)
-        if not msg:
-            await ctx.send("No message found")
-            return
-        await db.blocked.insert_one({'_id': msg.content})
-        await ctx.send("User blocked successfully.")
+    async def block(self, ctx, id: str):
+        try:
+            if await self.db.is_blocked(id):
+                await ctx.send("User is already blocked")
+                return
+            else:
+                await self.db.block(id)
+                await ctx.send("User has been blocked")
+                return
+        except Exception as e:
+            await ctx.send(e)
+            print(e)
 
     @commands.command()
     @commands.guild_only()
     @commands.is_owner()
-    async def unblock(self, ctx):
-        await ctx.send("Please enter the user id.")
-        def check(m):
-            return m.content and m.channel
-        msg = await self.bot.wait_for("message", check=check, timeout=60)
-        if not msg:
-            await ctx.send("No message found")
-            return
-        await db.blocked.delete_one({'_id': msg.content})
-        await ctx.send("User unblocked successfully.")
+    async def unblock(self, ctx, id):
+        try:
+            if await self.db.is_blocked(id):
+                await self.db.unblock(id)
+                await ctx.send("User has been unblocked")
+                return
+            else:
+                await ctx.send("User is not blocked")
+                return
+        except Exception as e:
+            await ctx.send(e)
+            print(e)
+
             
 async def setup(bot):
     await bot.add_cog(Developer(bot))
