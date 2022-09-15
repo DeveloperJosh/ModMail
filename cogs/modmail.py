@@ -248,6 +248,7 @@ help - this help message
 setup - sets up the server
 reset - removes all data from the db
 snippet [set, help, use] - Allows you to send preset messages
+config [category, role] - Allows you to change the config
 ```""", inline=False)
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)
