@@ -13,10 +13,6 @@ class Database:
         self.servers = self.db["servers"]
         self.commands = self.db["commands"]
 
-    # show that file is loaded
-    def __repr__(self):
-        return "<Database>"
-
     async def block(self, id):
         if await self.is_blocked(id):
             return False
@@ -35,10 +31,10 @@ class Database:
         return False
 
     async def is_blocked_list(self, id):
+        # list all ids in a list
         list = await self.blocked.find({}).to_list(None)
-        for i in list:
-            if id == i["_id"]:
-                return True
+        if list:
+            return list
         return False
 
     ################################################
@@ -70,9 +66,10 @@ class Database:
             return True
         return False
 
-    async def get_all_users(self):
-        # return all users
-        return await self.users.find({}).to_list(None)
+    async def get_users(self):
+        #try to show all users in a list
+        list = await self.users.find({}).to_list(None)
+        return list
 
     ################################################
 
@@ -132,3 +129,14 @@ class Database:
             await self.commands.delete_one({"guild": id, "command": command})
             return True
         return False
+
+    ################################################
+init_db : Database = None  # type: ignore
+def init():
+     global init_db
+     try:
+        init_db = Database()
+     except Exception as e:
+        print(e)
+     else:
+        print("Database has been connected")

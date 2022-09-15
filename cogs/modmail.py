@@ -1,9 +1,11 @@
+import time
 from typing import Dict
 import discord
 from utils.db import Database
 from discord.ext import commands
 from utils.dropdown import ServersDropdown, ServersDropdownView, Confirm
 from utils.exceptions import DMsDisabled, TicketCategoryNotFound
+from utils.embed import custom_embed, error_embed, success_embed
 
 dropdown_concurrency = []
 
@@ -21,6 +23,7 @@ class Modmail(commands.Cog):
 
             if await self.db.is_blocked_list(message.author.id):
                 await message.channel.send("You are blocked from using this bot.", delete_after=5)
+                print(f"{message.author} tried to use the bot but is blocked.")
                 return
 
             if not await self.db.find_user(message.author.id):
@@ -97,7 +100,26 @@ class Modmail(commands.Cog):
     @commands.hybrid_command()
     @commands.guild_only()
     async def ping(self, ctx):
-        await ctx.send(f"Pong! {round(self.bot.latency * 1000)}ms", ephemeral=True)
+       try:
+        #? Ping the db and the bot
+        msg = await ctx.send("Pinging...")
+        #? Ping the db then start a timer
+        db_ping = await self.db.add_user(123, {"ping": "pong"})
+        #? The timer has been started
+        start = time.perf_counter()
+        db_ping = await self.db.delete_user(123)
+        #? The timer has been stopped
+        stop = time.perf_counter()
+        db_ping = round((stop - start) * 1000)
+        bot_ping = self.bot.latency
+
+        bot_ping = round(bot_ping * 1000)
+        embed = custom_embed("Ping", f"DB Ping: {db_ping}ms\nBot Ping: {bot_ping}ms")
+        await msg.edit(content=None, embed=embed)
+       except Exception as e:
+        await ctx.send(e)
+        print(e)
+
 
     @commands.hybrid_command()
     @commands.guild_only()

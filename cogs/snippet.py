@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 from utils.db import Database
-from utils.database import db
 from utils.db import Database
 
 class Snippet(commands.Cog):
