@@ -1,5 +1,6 @@
 import motor.motor_asyncio
 import os
+from handler.mongo_errors import MongoErrors
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,6 +13,7 @@ class Database:
         self.users = self.db["users"]
         self.servers = self.db["servers"]
         self.commands = self.db["commands"]
+        self.errors = MongoErrors
 
     async def block(self, id):
         if await self.is_blocked(id):
@@ -129,14 +131,3 @@ class Database:
             await self.commands.delete_one({"guild": id, "command": command})
             return True
         return False
-
-    ################################################
-init_db : Database = None  # type: ignore
-def init():
-     global init_db
-     try:
-        init_db = Database()
-     except Exception as e:
-        print(e)
-     else:
-        print("Database has been connected")

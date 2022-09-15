@@ -50,7 +50,6 @@ class Developer(commands.Cog):
       for user in users:
             embed.add_field(name=user["_id"], value=user["ticket"], inline=False)
       await ctx.send(embed=embed)
-
             
 async def setup(bot):
     await bot.add_cog(Developer(bot))

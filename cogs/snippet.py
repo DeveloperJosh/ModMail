@@ -7,7 +7,7 @@ class Snippet(commands.Cog):
         self.bot = bot
         self.db = Database()
 
-    @commands.group(invoke_without_command=False)
+    @commands.group()
     @commands.guild_only()
     async def snippet(self, ctx):
         if ctx.invoked_subcommand is None:
