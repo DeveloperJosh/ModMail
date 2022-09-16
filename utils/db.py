@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 class Database:
+    """
+    This class is used to handle all the database stuff
+    """
     def __init__(self):
         self.client = motor.motor_asyncio.AsyncIOMotorClient(os.getenv("MONGO_URI"))
         self.db = self.client["mail"]
@@ -16,13 +19,13 @@ class Database:
         self.errors = MongoErrors
 
     async def block(self, id):
-        if await self.is_blocked(id):
+        if await self.blocked.find_one({"_id": id}):
             return False
         await self.blocked.insert_one({"_id": id})
         return True
 
     async def unblock(self, id):
-        if await self.is_blocked(id):
+        if await self.blocked.find_one({"_id": id}):
             await self.blocked.delete_one({"_id": id})
             return True
         return False

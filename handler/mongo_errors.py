@@ -1,9 +1,9 @@
+"""
+This file will not be used till i think of a way to use it
+"""
 class MongoErrors(Exception):
-    def __init__(self, message):
-        self.message = message
+    def __init__(self):
+        pass
 
-    async def not_found(self):
-        return self.message
-
-    async def already_exists(self):
-        return self.message
+    async def already_exists(self, id):
+        return f"User with id {id} already exists"
