@@ -114,7 +114,7 @@ class Modmail(commands.Cog):
         bot_ping = self.bot.latency
 
         bot_ping = round(bot_ping * 1000)
-        embed = custom_embed("Ping", f"DB Ping: {db_ping}ms\nBot Ping: {bot_ping}ms")
+        embed = custom_embed("Ping:ping_pong:", f"DB Ping: {db_ping}ms\nBot Ping: {bot_ping}ms")
         await msg.edit(content=None, embed=embed)
        except Exception as e:
         await ctx.send(e)

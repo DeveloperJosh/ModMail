@@ -30,3 +30,10 @@ def custom_embed(title: str, description: str) -> Embed:
         description=description,
         color=discord.Color.blue()
     )
+
+def image_embed(title: str, description: str, image: str) -> Embed:
+    return Embed(
+        title=title,
+        description=description,
+        color=discord.Color.blue()
+    ).set_thumbnail(url=image)
