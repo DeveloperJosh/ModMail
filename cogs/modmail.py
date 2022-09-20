@@ -88,6 +88,7 @@ class Modmail(commands.Cog):
                 await channel.create_webhook(name=message.author.name)
 
             else:
+               try:
                 data = await self.db.find_user(message.author.id)
                 guild = self.bot.get_guild(data['guild']) # type: ignore
                 channel = guild.get_channel(data['ticket']) # type: ignore
@@ -95,6 +96,9 @@ class Modmail(commands.Cog):
                 webhook = webhook_in_channel[0]
                 files = [await attachment.to_file() for attachment in message.attachments]
                 await webhook.send(message.content, username=message.author.name, avatar_url=message.author.avatar.url, files=files)
+               except Exception as e:
+                print(e)
+                await message.channel.send("An error occured. Please try again later.")
 
 
     @commands.hybrid_command()
