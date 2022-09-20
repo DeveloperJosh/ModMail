@@ -6,6 +6,7 @@ from discord.ext import commands
 from utils.dropdown import ServersDropdown, ServersDropdownView, Confirm
 from utils.exceptions import DMsDisabled, TicketCategoryNotFound
 from utils.embed import custom_embed, error_embed, success_embed
+from handler.ticket import Ticket
 
 dropdown_concurrency = []
 
@@ -13,6 +14,7 @@ class Modmail(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.db = Database()
+        self.ticket = Ticket(bot)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -20,14 +22,11 @@ class Modmail(commands.Cog):
         if message.author.bot:
             return
         if message.channel.type == discord.ChannelType.private:
-
             if await self.db.is_blocked_list(message.author.id):
                 await message.channel.send("You are blocked from using this bot.", delete_after=5)
                 print(f"{message.author} tried to use the bot but is blocked.")
                 return
-
             if not await self.db.find_user(message.author.id):
-
               mutual_guilds = message.author.mutual_guilds
               final_mutual_guilds: Dict[discord.Guild, dict] = {}
               for guild in mutual_guilds:
@@ -65,35 +64,40 @@ class Modmail(commands.Cog):
                         )
                         await message.author.send(embed=embed)
                         return
-                data = await self.db.find_server(guild.id)
-                channel = await guild.create_text_channel(name=f"ticket-{message.author.id}", category=guild.get_channel(data['category'])) # type: ignore
-                await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False)
-                role = guild.get_role(data['staff_role'])  # type: ignore
-                await channel.set_permissions(role, read_messages=True, send_messages=True)
-                embed = discord.Embed(title="Ticket Open", description=f"You have opened a ticket. Please wait for a staff member to reply.", color=0x00ff00)
-                embed.set_footer(text="Modmail")
-                await message.author.send(embed=embed)
-                embed = discord.Embed(title=f"```User ID: {message.author.id}```", color=discord.Color.blurple())
-                time = message.author.created_at.strftime("%b %d, %Y")
-                embed.add_field(name="User Name", value=message.author.name, inline=False)
-                embed.add_field(name="Account Age", value=f"{time}", inline=False)
-                embed.add_field(name="Message", value=f"{message.content}", inline=True)
-                embed.set_footer(text="Modmail")
-                await self.db.add_user(message.author.id, { "ticket": channel.id, "guild": guild.id })
-                await channel.send(f"<@&{data['staff_role']}>")  # type: ignore
-                files = [await attachment.to_file() for attachment in message.attachments]
-                if len(files) > 1:
+                try:
+                 data = await self.db.find_server(guild.id)
+                 channel = await guild.create_text_channel(name=f"ticket-{message.author.id}", category=guild.get_channel(data['category'])) # type: ignore
+                 await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False)
+                 role = guild.get_role(data['staff_role'])  # type: ignore
+                 await channel.set_permissions(role, read_messages=True, send_messages=True)
+                 embed = discord.Embed(title="Ticket Open", description=f"You have opened a ticket. Please wait for a staff member to reply.", color=0x00ff00)
+                 embed.set_footer(text="Modmail")
+                 await message.author.send(embed=embed)
+                 embed = discord.Embed(title=f"```User ID: {message.author.id}```", color=discord.Color.blurple())
+                 time = message.author.created_at.strftime("%b %d, %Y")
+                 embed.add_field(name="User Name", value=message.author.name, inline=False)
+                 embed.add_field(name="Account Age", value=f"{time}", inline=False)
+                 embed.add_field(name="Message", value=f"{message.content}", inline=True)
+                 embed.set_footer(text="Modmail")
+                 await self.ticket.create(message.author.id, channel.id, guild.id)
+                 await channel.send(f"<@&{data['staff_role']}>")  # type: ignore
+                 files = [await attachment.to_file() for attachment in message.attachments]
+                 if len(files) > 1:
                     await channel.send(content=files)
-                await channel.send(embed=embed)
-                await channel.create_webhook(name=message.author.name)
-
+                 await channel.send(embed=embed)
+                #await channel.create_webhook(name=message.author.name)
+                 await self.ticket.get_webhook(channel.id, message.author.name)
+                except Exception as e:
+                    print(e)
+                    await message.author.send(embed=error_embed("Oh no!", "Something went wrong. Please try again later."))
             else:
                try:
                 data = await self.db.find_user(message.author.id)
                 guild = self.bot.get_guild(data['guild']) # type: ignore
                 channel = guild.get_channel(data['ticket']) # type: ignore
-                webhook_in_channel = await channel.webhooks()
-                webhook = webhook_in_channel[0]
+                #webhook_in_channel = await channel.webhooks()
+                #webhook = webhook_in_channel[0]
+                webhook = await self.ticket.get_webhook(channel.id, message.author.name)
                 files = [await attachment.to_file() for attachment in message.attachments]
                 await webhook.send(message.content, username=message.author.name, avatar_url=message.author.avatar.url, files=files)
                except Exception as e:
