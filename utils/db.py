@@ -1,6 +1,5 @@
 import motor.motor_asyncio
 import os
-from handler.mongo_errors import MongoErrors
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,7 +15,6 @@ class Database:
         self.users = self.db["users"]
         self.servers = self.db["servers"]
         self.commands = self.db["commands"]
-        self.errors = MongoErrors
 
     async def block(self, id):
         if await self.blocked.find_one({"_id": id}):
