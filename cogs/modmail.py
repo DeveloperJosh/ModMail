@@ -85,8 +85,7 @@ class Modmail(commands.Cog):
                  if len(files) > 1:
                     await channel.send(content=files)
                  await channel.send(embed=embed)
-                #await channel.create_webhook(name=message.author.name)
-                 await self.ticket.get_webhook(channel.id, message.author.name)
+                 await self.ticket.webhook(channel.id, message.author.name)
                 except Exception as e:
                     print(e)
                     await message.author.send(embed=error_embed("Oh no!", "Something went wrong. Please try again later."))
@@ -95,9 +94,7 @@ class Modmail(commands.Cog):
                 data = await self.db.find_user(message.author.id)
                 guild = self.bot.get_guild(data['guild']) # type: ignore
                 channel = guild.get_channel(data['ticket']) # type: ignore
-                #webhook_in_channel = await channel.webhooks()
-                #webhook = webhook_in_channel[0]
-                webhook = await self.ticket.get_webhook(channel.id, message.author.name)
+                webhook = await self.ticket.webhook(channel.id, message.author.name)
                 files = [await attachment.to_file() for attachment in message.attachments]
                 await webhook.send(message.content, username=message.author.name, avatar_url=message.author.avatar.url, files=files)
                except Exception as e:

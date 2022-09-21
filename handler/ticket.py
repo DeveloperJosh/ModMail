@@ -15,13 +15,14 @@ class Ticket():
         if data:
             await self.db.add_user(id, {"ticket": int(channel_id), "guild": int(guild_id), "name": data.name, "discriminator": data.discriminator, "avatar": str(data.avatar.url)}) # type: ignore
             return True
+        print("User not found")
         return False
 
-    async def get_webhook(self, channel_id, webhook_name) -> discord.Webhook:  # type: ignore
+    async def webhook(self, channel_id, webhook_name) -> discord.Webhook:  # type: ignore
       """This function looks for webhooks with the channel id provided and returns the webhook if it finds one, If it doesn't find one it will create one and return it"""
       channel = self.bot.get_channel(channel_id)
       if channel is None:
-          raise ValueError("Channel not found")
+          raise commands.ChannelNotFound(channel_id)
       webhooks = await channel.webhooks()  # type: ignore
       if webhooks:
             return webhooks[0]
