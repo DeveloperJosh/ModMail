@@ -11,6 +11,7 @@ class Ticket():
         self.bot = bot
 
     async def send_mondmail_message(self, channel: discord.TextChannel, message: Union[discord.Message, str], user_name) -> discord.Message:  # type: ignore
+        """Sends the user message to the ticket channel"""
         webhook = await self.webhook(channel.id, user_name)
         if isinstance(message, discord.Message):
             if message.attachments:
@@ -31,18 +32,25 @@ class Ticket():
             time = data.created_at.strftime("%b %d, %Y")
             embed.add_field(name="User Name", value=data.name, inline=False)
             embed.add_field(name="Account Age", value=f"{time}", inline=False)
-            if message.content != "": # type: ignore
-             embed.add_field(name="Message", value=f"{message.content}", inline=True) # type: ignore
+            if message.content != "":
+             embed.add_field(name="Message", value=f"{message.content}", inline=True)
             embed.set_footer(text="Modmail")
-            await channel.send(f"<@&{guild['staff_role']}>")  # type: ignore
+            await channel.send(f"<@&{guild['staff_role']}>")
             images = []
-            if message.attachments: # type: ignore
-                for attachment in message.attachments:  # type: ignore
+            if message.attachments:
+                for attachment in message.attachments:
                     images.append(await attachment.to_file())
-                await channel.send(files=images) # type: ignore
-            await channel.send(embed=embed) # type: ignore
+                await channel.send(files=images)
+            await channel.send(embed=embed)
             return True
         print("User not found")
+        return False
+
+    async def check(self, id) -> bool:
+        """This function checks if the user has a ticket"""
+        data = await self.db.find_user(id)
+        if data:
+            return True
         return False
 
     async def webhook(self, channel_id, webhook_name) -> discord.Webhook:  # type: ignore
