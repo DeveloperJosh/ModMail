@@ -65,15 +65,8 @@ class Modmail(commands.Cog):
                         await message.author.send(embed=embed)
                         return
                 try:
-                 data = await self.db.find_server(guild.id)
-                 channel = await guild.create_text_channel(name=f"ticket-{message.author.id}", category=guild.get_channel(data['category'])) # type: ignore
-                 await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False)
-                 role = guild.get_role(data['staff_role'])  # type: ignore
-                 await channel.set_permissions(role, read_messages=True, send_messages=True)
-                 embed = discord.Embed(title="Ticket Open", description=f"You have opened a ticket. Please wait for a staff member to reply.", color=0x00ff00)
-                 embed.set_footer(text="Modmail")
-                 await message.author.send(embed=embed)
-                 await self.ticket.create(message.author.id, channel.id, guild.id, message)
+                 # Most of this code is from the ticket core ./utils/ticket_core.py
+                 await self.ticket.create(message.author.id, guild.id, message)
                 except Exception as e:
                     print(e)
                     await message.author.send(embed=error_embed("Oh no!", "Something went wrong while creating your ticket. Please try again later."))
@@ -90,16 +83,12 @@ class Modmail(commands.Cog):
 
     @commands.hybrid_command()
     @commands.guild_only()
-    async def ping(self, ctx):
+    async def ping(self, ctx, number=1):
        try:
-        #? Ping the db and the bot
         msg = await ctx.send("Pinging...")
-        #? Ping the db then start a timer
-        db_ping = await self.db.add_user(123, {"ping": "pong"})
-        #? The timer has been started
+        db_ping = await self.db.add_user(number, {"ping": "pong"})
         start = time.perf_counter()
-        db_ping = await self.db.delete_user(123)
-        #? The timer has been stopped
+        db_ping = await self.db.delete_user(number)
         stop = time.perf_counter()
         db_ping = round((stop - start) * 1000)
         bot_ping = self.bot.latency
@@ -117,14 +106,14 @@ class Modmail(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     async def reply(self, ctx: commands.Context, *, message):
         try:
-         id = ctx.channel.name.split("-")[1]
+         id = ctx.channel.name.split("-")[1]  # type: ignore
         except:
             return await ctx.send("This is not a ticket channel.")
         user = self.bot.get_user(int(id))
         if not await self.ticket.check(int(id)):
             await ctx.send("This is not a ticket channel.", ephemeral=True)
             return
-        msg = await ctx.send("Send reply", ephemeral=True)
+        await ctx.send("Send reply", ephemeral=True)
         embed = discord.Embed(description=f"**{message}**", color=0x00ff00)
         embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url)
         embed.set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
