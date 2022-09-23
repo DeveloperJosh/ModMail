@@ -61,7 +61,7 @@ class Ticket():
                 for attachment in message.attachments: # type: ignore
                     images.append(await attachment.to_file())
                 await channel_id.send(files=images) # type: ignore
-            await channel_id.send(embed=embed) # type: ignore
+            await channel_id.send(embed=embed, view=Block_buttons()) # type: ignore
             return True
         print("User not found")
         return False
