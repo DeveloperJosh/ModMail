@@ -43,5 +43,16 @@ class Config(commands.Cog):
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)
 
+    @config.command()
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def transcript(self, ctx, channel: discord.TextChannel):
+        if not await self.db.find_server(ctx.guild.id):
+            return await ctx.send("Please run `setup` first")
+        await self.db.update_server(ctx.guild.id, {'transcript_channel': channel.id})
+        embed = discord.Embed(title="Transcript Channel Updated", description=f"The transcript channel has been updated to {channel.mention}", color=0x00ff00)
+        embed.set_footer(text="Modmail")
+        await ctx.send(embed=embed)
+
 async def setup(bot):
     await bot.add_cog(Config(bot))

@@ -1,8 +1,12 @@
+from uuid import uuid4
+from io import BytesIO
 import discord
 from discord.ext import commands
 from utils.db import Database
 from utils.bot import ModMail
 from typing import Optional, Dict, Union
+
+from utils.exceptions import TranscriptChannelNotFound
 
 """
 I use # type: ignore to ignore the errors that are caused by the fact that my vscode is broken.
@@ -14,9 +18,9 @@ class Ticket():
         self.db = Database()
         self.bot = bot
 
-    async def send_mondmail_message(self, channel: discord.TextChannel, message: Union[discord.Message, str], user_name) -> discord.Message:  # type: ignore
+    async def send_mondmail_message(self, channel: discord.TextChannel, message: Union[discord.Message, str], webhook_name) -> discord.Message:  # type: ignore
         """Sends the user message to the ticket channel"""
-        webhook = await self.webhook(channel.id, user_name)
+        webhook = await self.webhook(channel.id, webhook_name)
         if isinstance(message, discord.Message):
             if message.attachments:
                 attachments = []
@@ -33,7 +37,6 @@ class Ticket():
             guild = self.bot.get_guild(int(guild_id))
 
             channel = await guild.create_text_channel(name=f"ticket-{message.author.id}", category=guild.get_channel(guild_data['category'])) # type: ignore
-            await self.webhook(channel.id, message.author.display_name)
             await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False) # type: ignore
             role = guild.get_role(guild_data['staff_role']) # type: ignore
             await channel.set_permissions(role, read_messages=True, send_messages=True) # type: ignore
@@ -47,6 +50,7 @@ class Ticket():
             await message.author.send(embed=embed) # type: ignore
 
             channel_id = self.bot.get_channel(int(channel.id))
+            await self.webhook(channel.id, "Modmail") # type: ignore
 
             embed = discord.Embed(title=f"```User ID: {id}```", color=discord.Color.blurple())
             time = data.created_at.strftime("%b %d, %Y")
@@ -56,7 +60,7 @@ class Ticket():
              embed.add_field(name="Message", value=f"{message.content}", inline=True) # type: ignore
             embed.set_footer(text="Modmail")
 
-            await channel_id.send(f"<@&{guild_data['staff_role']}>") # type: ignore
+            await channel_id.send(f"<@&{guild_data['staff_role']}>\nUsing `{self.bot.command_prefix}` in this ticket will block messages from being sent") # type: ignore
             images = []
             if message.attachments: # type: ignore
                 for attachment in message.attachments: # type: ignore
@@ -69,7 +73,7 @@ class Ticket():
 
     async def check(self, id) -> bool:
         """This function checks if the user has a ticket"""
-        data = await self.db.find_user(id)
+        data = await self.db.find_user(id) or await self.db.find_ticket(id)
         if data:
             return True
         return False
@@ -83,3 +87,19 @@ class Ticket():
       if webhooks:
             return discord.utils.get(webhooks, name=webhook_name)  # type: ignore
       return await channel.create_webhook(name=webhook_name)  # type: ignore
+
+    async def create_transcript(self, channel: discord.TextChannel) -> None:
+     channel = self.bot.get_channel(channel.id)  # type: ignore
+     text = ""
+     all_msgs = [all_msg async for all_msg in channel.history(limit=None)]
+     for msg in all_msgs[::-1]:
+        content = msg.content.replace("\n\n", "\n‎\n")
+        text += f"{msg.author} | {channel.name[7:] if len(str(msg.author).split('#')) == 3 else msg.author.id} | {content}\n\n"
+     data = await self.db.find_server(channel.guild.id)
+     try:
+      transcript_db_channel = self.bot.get_channel(data['transcript_channel'])  # type: ignore
+     except Exception as e:
+        print(e)
+     if transcript_db_channel is None:
+        return
+     await transcript_db_channel.send(file=discord.File(BytesIO(text.encode("utf-8")), filename=f"{channel.name}.txt"))

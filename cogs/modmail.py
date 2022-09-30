@@ -16,8 +16,8 @@ class Modmail(commands.Cog):
         self.db = Database()
         self.ticket = Ticket(bot)
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
+    @commands.Cog.listener(name="on_message")
+    async def start_new_ticket(self, message):
         # mod mail
         if message.author.bot:
             return
@@ -75,11 +75,45 @@ class Modmail(commands.Cog):
                 data = await self.db.find_user(message.author.id)
                 guild = self.bot.get_guild(data['guild']) # type: ignore
                 channel = guild.get_channel(data['ticket']) # type: ignore
-                await self.ticket.send_mondmail_message(channel, message, message.author.name)
+                await self.ticket.send_mondmail_message(channel, message, "Modmail")
                except Exception as e:
                 print(e)
                 await message.channel.send("An error occured. Please try again later.")
 
+    @commands.Cog.listener(name="on_message")
+    async def reply_to_ticket(self, message):
+        if message.content.startswith(self.bot.command_prefix):
+            return
+        if message.author.bot:
+            return
+        if message.channel.type == discord.ChannelType.private:
+            pass
+        data = await self.db.find_ticket(message.channel.id)
+        if data:
+            user = self.bot.get_user(data['_id'])
+            if not user:
+                return
+            try:
+                # files
+                files = []
+                for attachment in message.attachments:
+                    files.append(await attachment.to_file())
+                    # send message
+                await user.send(f"**{message.author.name}** in **{message.guild.name}**:\n{message.content}", files=files)
+                # time to send webhook
+                try:
+                    await self.ticket.send_mondmail_message(message.channel, message, "Modmail")
+                    await message.delete()
+                except Exception as e:
+                    await message.channel.send("An error occured. Please check the console for more information.")
+                    print(e)
+            except discord.Forbidden:
+                await message.channel.send("I could not send your message to the user. Please make sure they have DMs enabled.")
+            except Exception as e:
+                print(e)
+                await message.channel.send("An error occured. Please try again later.")
+        else:
+            return
 
     @commands.hybrid_command()
     @commands.guild_only()
@@ -106,7 +140,7 @@ class Modmail(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     async def reply(self, ctx: commands.Context, *, message):
         try:
-            data = await self.db.find_ticket_user(ctx.channel.id)
+            data = await self.db.find_ticket(ctx.channel.id)
             id = data['_id'] # type: ignore
         except:
             return await ctx.send("This is not a ticket channel.")
@@ -114,13 +148,11 @@ class Modmail(commands.Cog):
         if not await self.ticket.check(int(id)):
             await ctx.send("This is not a ticket channel.", ephemeral=True)
             return
-        d = await ctx.send("Send reply", ephemeral=True)
-        embed = discord.Embed(description=f"**{message}**", color=0x00ff00)
-        embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url)
-        embed.set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
+        #embed = discord.Embed(description=f"**{message}**", color=0x00ff00)
+        #embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url)
+        #embed.set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
         try:
-         await user.send(embed=embed)
-         await d.delete()
+         await user.send(f"**{message.author.name}** in **{message.guild.name}**:\n{message.content}")
          webhook = await ctx.channel.webhooks()  # type: ignore
          await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
         except Exception as e:
@@ -152,22 +184,30 @@ class Modmail(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     async def close(self, ctx, *, reason=None):
+
+        if await self.ticket.check(ctx.channel.id):
+            pass
+        else:
+            return await ctx.send("This is not a ticket channel.")
+
         if reason is None:
-         id = ctx.message.channel.name.split("-")[1]
-         user = self.bot.get_user(int(id))
+         data = await self.db.find_ticket(ctx.channel.id)
+         user = self.bot.get_user(int(data['_id'])) # type: ignore
          await self.db.delete_user(user.id)
+         await self.ticket.create_transcript(ctx.channel)
+         await ctx.channel.delete()
          embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed", color=0x00ff00)
          embed.set_footer(text="Modmail")
          await user.send(embed=embed)
-         await ctx.message.channel.delete()
         else:
-         id = ctx.message.channel.name.split("-")[1]
-         user = self.bot.get_user(int(id))
+         data = await self.db.find_ticket(ctx.channel.id)
+         user = self.bot.get_user(int(data['_id'])) # type: ignore
          await self.db.delete_user(user.id)
+         await self.ticket.create_transcript(ctx.channel)
+         await ctx.message.channel.delete()
          embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed\nReason: {reason}", color=0x00ff00)
          embed.set_footer(text="Modmail")
          await user.send(embed=embed)
-         await ctx.message.channel.delete()
 
     @commands.command()
     @commands.guild_only()
@@ -176,11 +216,12 @@ class Modmail(commands.Cog):
     async def setup(self, ctx):
         if not await self.db.find_server(ctx.guild.id):
              category = await ctx.guild.create_category(name="Tickets")
+             channel = await ctx.guild.create_text_channel(name="ticket-logs", category=category)
              role = await ctx.guild.create_role(name="Ticket Support")
              if role.position >= ctx.guild.me.top_role.position:
               return await ctx.send("Please give me a higher role position")
-             await self.db.create_server(ctx.guild.id, {'category': category.id, "staff_role": role.id})
-             embed = discord.Embed(title="Setup", description=f"Okay I know you didn't get to pick this stuff but that is coming soon\nCategory: {category.name}\nSupport Role: {role.name}", color=0x00ff00)
+             await self.db.create_server(ctx.guild.id, {'category': category.id, "staff_role": role.id, "transcript_channel": channel.id})
+             embed = discord.Embed(title="Setup", description=f"Okay I know you didn't get to pick this stuff but that is coming soon\nCategory: {category.name}\nTranscripts Channel: {channel.name}\nSupport Role: {role.name}", color=0x00ff00)
              embed.set_footer(text="Modmail")
              await ctx.send(embed=embed)
              await category.set_permissions(ctx.guild.me, read_messages=True, send_messages=True)

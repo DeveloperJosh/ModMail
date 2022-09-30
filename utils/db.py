@@ -78,7 +78,7 @@ class Database:
 
     # this is for the mail system
 
-    async def find_ticket_user(self, id):
+    async def find_ticket(self, id):
         # return the ticket data
         data = await self.users.find_one({"ticket": id})
         if data:
