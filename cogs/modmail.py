@@ -196,17 +196,15 @@ class Modmail(commands.Cog):
          data = await self.db.find_ticket(ctx.channel.id)
          user = self.bot.get_user(int(data['_id'])) # type: ignore
          await self.db.delete_user(user.id)
-         await self.ticket.create_transcript(ctx.channel, ctx.guild)
-         await ctx.channel.delete()
          embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed", color=0x00ff00)
          embed.set_footer(text="Modmail")
          await user.send(embed=embed)
+         await self.ticket.create_transcript(ctx.channel, ctx.guild)
         else:
          data = await self.db.find_ticket(ctx.channel.id)
          user = self.bot.get_user(int(data['_id'])) # type: ignore
          await self.db.delete_user(user.id)
          await self.ticket.create_transcript(ctx.channel, ctx.guild)
-         await ctx.message.channel.delete()
          embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed\nReason: {reason}", color=0x00ff00)
          embed.set_footer(text="Modmail")
          await user.send(embed=embed)
@@ -237,17 +235,25 @@ class Modmail(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
-    async def transcripts(self, ctx):
+    async def transcripts(self, ctx, *, uuid=None):
+      if uuid is None:
         data = await self.db.find_server(ctx.guild.id)
         if data is None:
             return await ctx.send("This server has not been setup yet.")
         # show a list of the links to the transcripts
         embed = discord.Embed(title="Transcripts", description=f"Here are the transcripts for this server", color=0x00ff00)
         embed.set_footer(text="Modmail")
-        for i in data['transcripts']:
-            embed.add_field(name=i, value=f"[check here]({data['transcripts'][i]})", inline=False)
+        for i in data['transcripts']:  # type: ignore
+            embed.add_field(name=i, value=f"[check here]({data['transcripts'][i]})", inline=False)  # type: ignore
         await ctx.send(embed=embed)
-    
+      else:
+        data = await self.db.find_server(ctx.guild.id)
+        if data is None:
+            return await ctx.send("This server has not been setup yet.")
+        if uuid not in data['transcripts']:  # type: ignore
+            return await ctx.send("This transcript does not exist.")
+        await ctx.send(data['transcripts'][uuid])  # type: ignore
+
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
@@ -290,9 +296,9 @@ close [reason] - close a ticket
 help - this help message
 setup - sets up the server
 reset - removes all data from the db
-snippet [set, help, use] - Allows you to send preset messages
+snippet [add, remove, list] - add, remove, or list snippets (if no subcommand is given, help will be shown)
 config [category, role] - Allows you to change the config
-transcripts - shows all the transcripts
+transcripts [uuid] - Allows you to view the transcripts (uuid is optional)
 ```""", inline=False)
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)

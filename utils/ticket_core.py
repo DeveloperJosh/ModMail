@@ -6,8 +6,6 @@ from utils.db import Database
 from utils.bot import ModMail
 from typing import Optional, Dict, Union
 
-from utils.exceptions import TranscriptChannelNotFound
-
 """
 I use # type: ignore to ignore the errors that are caused by the fact that my vscode is broken.
 """
@@ -93,20 +91,18 @@ class Ticket():
      text = ""
      all_msgs = [all_msg async for all_msg in channel.history(limit=None)]
      for msg in all_msgs[::-1]:
-        content = msg.content.replace("\n\n", "\n‎\n")
+        content = msg.content.replace("\n\n", "\n\n")
         text += f"{msg.author} | {channel.name[7:] if len(str(msg.author).split('#')) == 3 else msg.author.id} | {content}\n\n"
      data = await self.db.find_server(channel.guild.id)
-     try:
-      transcript_db_channel = self.bot.get_channel(data['transcript_channel'])  # type: ignore
-     except Exception as e:
-        print(e)
+     transcript_db_channel = self.bot.get_channel(data['transcript_channel'])  # type: ignore
      if transcript_db_channel is None:
         return
      randomly_generator_id = str(uuid4())
-     msg = await transcript_db_channel.send(file=discord.File(BytesIO(text.encode("utf-8")), filename=f"{channel.name}.txt"))
-     server = await self.db.find_server(guild.id)
-     if not server['transcripts']:
-      server['transcripts'] = {}
-     server['transcripts'][randomly_generator_id] = "https://discord.com/channels/{}/{}/{}".format(guild.id, msg.channel.id, msg.id)
+     msg = await transcript_db_channel.send(content=f"To see more info about the ticket do `{self.bot.command_prefix}transcripts {randomly_generator_id}`", file=discord.File(BytesIO(text.encode("utf-8")), filename=f"{channel.name}.txt"))  # type: ignore
+     transcript = await self.db.find_server(guild.id)
+     if not transcript['transcripts']:  # type: ignore
+      transcript['transcripts'] = {}  # type: ignore
+     transcript['transcripts'][randomly_generator_id] = "https://discord.com/channels/{}/{}/{}".format(guild.id, msg.channel.id, msg.id)  # type: ignore
      # add link to the transcript
-     await self.db.update_server(guild.id, server)
+     await self.db.update_server(guild.id, transcript)
+     await channel.delete()

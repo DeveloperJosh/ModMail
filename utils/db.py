@@ -131,6 +131,11 @@ class Database:
             return data
         return False
 
+    async def find_commands(self, id):
+        # try to show all commands in a list
+        list = await self.commands.find({"guild": id}).to_list(None)
+        return list
+
     async def create_command(self, id, data):
         if await self.find_command(id, data["command"]):
             return False

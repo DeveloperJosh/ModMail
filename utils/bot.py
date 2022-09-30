@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import logging.handlers
 from aiohttp import ClientSession
