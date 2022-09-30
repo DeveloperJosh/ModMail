@@ -107,7 +107,7 @@ class Modmail(commands.Cog):
     async def reply(self, ctx: commands.Context, *, message):
         try:
             data = await self.db.find_ticket_user(ctx.channel.id)
-            id = data['_id']  # type: ignore
+            id = data['_id'] # type: ignore
         except:
             return await ctx.send("This is not a ticket channel.")
         user = self.bot.get_user(int(id))

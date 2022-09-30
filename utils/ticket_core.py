@@ -33,6 +33,7 @@ class Ticket():
             guild = self.bot.get_guild(int(guild_id))
 
             channel = await guild.create_text_channel(name=f"ticket-{message.author.id}", category=guild.get_channel(guild_data['category'])) # type: ignore
+            await self.webhook(channel.id, message.author.display_name)
             await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False) # type: ignore
             role = guild.get_role(guild_data['staff_role']) # type: ignore
             await channel.set_permissions(role, read_messages=True, send_messages=True) # type: ignore
