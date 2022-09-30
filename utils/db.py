@@ -84,6 +84,13 @@ class Database:
         if data:
             return data
         return False
+    
+    # testing
+    async def save_transcript(self, id, data):
+        if await self.find_server(id):
+            await self.servers.update_one({"_id": id}, {"$set": {"transcript": data}})
+            return True
+        return False
 
     ################################################
 

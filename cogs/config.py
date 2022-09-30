@@ -15,7 +15,7 @@ class Config(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def config(self, ctx):
         if ctx.invoked_subcommand is None:
-            embed = discord.Embed(title="Config", description=f"This is a beta command but here are the sub commands\ncategory <id>\nrole <id>", color=0x00ff00)
+            embed = discord.Embed(title="Config", description=f"This is a beta command but here are the sub commands\ncategory <id>\nrole <id>\ntranscript <@channel>", color=0x00ff00)
             embed.set_footer(text="Modmail")
             await ctx.send(embed=embed)
 

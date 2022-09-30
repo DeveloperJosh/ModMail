@@ -13,7 +13,7 @@ class Snippet(commands.Cog):
     @commands.guild_only()
     async def snippet(self, ctx):
         if ctx.invoked_subcommand is None:
-          embed = discord.Embed(title="Help", description="```\nsnippet set [name] ['text']\nsnippet use [name]```", color=0x00ff00)
+          embed = discord.Embed(title="Help", description="```\nsnippet set [name] ['text']\nsnippet use [name]\nsnippet delete [name]```", color=0x00ff00)
           await ctx.send(embed=embed)
 
     @snippet.command()

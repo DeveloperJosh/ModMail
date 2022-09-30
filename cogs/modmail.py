@@ -76,6 +76,8 @@ class Modmail(commands.Cog):
                 guild = self.bot.get_guild(data['guild']) # type: ignore
                 channel = guild.get_channel(data['ticket']) # type: ignore
                 await self.ticket.send_mondmail_message(channel, message, "Modmail")
+                # add a reaction to the message
+                await message.add_reaction("✅")
                except Exception as e:
                 print(e)
                 await message.channel.send("An error occured. Please try again later.")
@@ -194,7 +196,7 @@ class Modmail(commands.Cog):
          data = await self.db.find_ticket(ctx.channel.id)
          user = self.bot.get_user(int(data['_id'])) # type: ignore
          await self.db.delete_user(user.id)
-         await self.ticket.create_transcript(ctx.channel)
+         await self.ticket.create_transcript(ctx.channel, ctx.guild)
          await ctx.channel.delete()
          embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed", color=0x00ff00)
          embed.set_footer(text="Modmail")
@@ -203,7 +205,7 @@ class Modmail(commands.Cog):
          data = await self.db.find_ticket(ctx.channel.id)
          user = self.bot.get_user(int(data['_id'])) # type: ignore
          await self.db.delete_user(user.id)
-         await self.ticket.create_transcript(ctx.channel)
+         await self.ticket.create_transcript(ctx.channel, ctx.guild)
          await ctx.message.channel.delete()
          embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed\nReason: {reason}", color=0x00ff00)
          embed.set_footer(text="Modmail")
@@ -220,7 +222,7 @@ class Modmail(commands.Cog):
              role = await ctx.guild.create_role(name="Ticket Support")
              if role.position >= ctx.guild.me.top_role.position:
               return await ctx.send("Please give me a higher role position")
-             await self.db.create_server(ctx.guild.id, {'category': category.id, "staff_role": role.id, "transcript_channel": channel.id})
+             await self.db.create_server(ctx.guild.id, {'category': category.id, "staff_role": role.id, "transcript_channel": channel.id, "transcripts": {}})
              embed = discord.Embed(title="Setup", description=f"Okay I know you didn't get to pick this stuff but that is coming soon\nCategory: {category.name}\nTranscripts Channel: {channel.name}\nSupport Role: {role.name}", color=0x00ff00)
              embed.set_footer(text="Modmail")
              await ctx.send(embed=embed)
@@ -231,6 +233,20 @@ class Modmail(commands.Cog):
             embed = discord.Embed(title="Setup Complete", description=f"The server {ctx.guild.name} has already been setup.", color=0x00ff00)
             embed.set_footer(text="Modmail")
             await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.guild_only()
+    @commands.has_permissions(manage_messages=True)
+    async def transcripts(self, ctx):
+        data = await self.db.find_server(ctx.guild.id)
+        if data is None:
+            return await ctx.send("This server has not been setup yet.")
+        # show a list of the links to the transcripts
+        embed = discord.Embed(title="Transcripts", description=f"Here are the transcripts for this server", color=0x00ff00)
+        embed.set_footer(text="Modmail")
+        for i in data['transcripts']:
+            embed.add_field(name=i, value=f"[check here]({data['transcripts'][i]})", inline=False)
+        await ctx.send(embed=embed)
     
     @commands.command()
     @commands.guild_only()
@@ -276,6 +292,7 @@ setup - sets up the server
 reset - removes all data from the db
 snippet [set, help, use] - Allows you to send preset messages
 config [category, role] - Allows you to change the config
+transcripts - shows all the transcripts
 ```""", inline=False)
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)
