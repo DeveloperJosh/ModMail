@@ -4,3 +4,4 @@ __pycache__
 .idea
 discord.log
 venv
+bluecord.py

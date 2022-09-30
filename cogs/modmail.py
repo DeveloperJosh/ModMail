@@ -106,25 +106,23 @@ class Modmail(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     async def reply(self, ctx: commands.Context, *, message):
         try:
-         id = ctx.channel.name.split("-")[1]  # type: ignore
+            data = await self.db.find_ticket_user(ctx.channel.id)
+            id = data['_id']  # type: ignore
         except:
             return await ctx.send("This is not a ticket channel.")
         user = self.bot.get_user(int(id))
         if not await self.ticket.check(int(id)):
             await ctx.send("This is not a ticket channel.", ephemeral=True)
             return
-        await ctx.send("Send reply", ephemeral=True)
+        d = await ctx.send("Send reply", ephemeral=True)
         embed = discord.Embed(description=f"**{message}**", color=0x00ff00)
         embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url)
         embed.set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
         try:
          await user.send(embed=embed)
+         await d.delete()
          webhook = await ctx.channel.webhooks()  # type: ignore
          await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
-         try:
-          await ctx.message.delete()
-         except:
-          pass
         except Exception as e:
             print(e)
             raise DMsDisabled(user)

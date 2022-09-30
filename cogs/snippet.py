@@ -2,6 +2,8 @@ import discord
 from discord.ext import commands
 from utils.db import Database
 
+## TODO: Clean the code, add more comments, and add more features, make it much more user friendly
+
 class Snippet(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

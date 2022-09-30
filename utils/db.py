@@ -76,6 +76,17 @@ class Database:
 
     ################################################
 
+    # this is for the mail system
+
+    async def find_ticket_user(self, id):
+        # return the ticket data
+        data = await self.users.find_one({"ticket": id})
+        if data:
+            return data
+        return False
+
+    ################################################
+
     async def find_server(self, id):
         # return the server data
         data = await self.servers.find_one({"_id": id})
@@ -93,13 +104,13 @@ class Database:
         return True
 
     async def update_server(self, id, data):
-        if await self.find_server(id):
+        if await self.servers.find_one({"_id": id}):
             await self.servers.update_one({"_id": id}, {"$set": data})
             return True
         return False
 
     async def delete_server(self, id):
-        if await self.find_server(id):
+        if await self.servers.find_one({"_id": id}):
             await self.servers.delete_one({"_id": id})
             return True
         return False
