@@ -117,7 +117,7 @@ class Modmail(commands.Cog):
         else:
             return
 
-    @commands.command()
+    @commands.command(help="Checks the status of the bot.")
     @commands.guild_only()
     async def ping(self, ctx, number=1):
        try:
@@ -136,7 +136,7 @@ class Modmail(commands.Cog):
         await ctx.send(e)
         print(e)
 
-    @commands.command(aliases=["r"])
+    @commands.command(aliases=["r"], help="Reply to a ticket.")
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     async def reply(self, ctx, *, message):
@@ -153,7 +153,7 @@ class Modmail(commands.Cog):
         webhook = await ctx.channel.webhooks()  # type: ignore
         await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
         
-    @commands.command(aliases=["anon-reply", "anonreply", "ar"])
+    @commands.command(aliases=["anon-reply", "anonreply", "ar"], help="Reply to a ticket anonymously.")
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     async def areply(self, ctx, *, message):
@@ -170,7 +170,7 @@ class Modmail(commands.Cog):
         webhook = await ctx.channel.webhooks()  # type: ignore
         await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
 
-    @commands.command()
+    @commands.command(help="Close a ticket.")
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     async def close(self, ctx, *, reason=None):
@@ -197,7 +197,7 @@ class Modmail(commands.Cog):
          embed.set_footer(text="Modmail")
          await user.send(embed=embed)
 
-    @commands.command()
+    @commands.command(help="Sets up the modmail system, this will create a category and a channel for the bot to send messages to.")
     @commands.guild_only()
     @commands.bot_has_permissions(manage_channels=True)
     @commands.has_permissions(administrator=True)
@@ -220,7 +220,7 @@ class Modmail(commands.Cog):
             embed.set_footer(text="Modmail")
             await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(help="Shows all of the transcripts for the server.")
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     async def transcripts(self, ctx, *, uuid=None):
@@ -245,7 +245,7 @@ class Modmail(commands.Cog):
             return await ctx.send("This transcript does not exist.")
         await ctx.send(data['transcripts'][uuid])  # type: ignore
 
-    @commands.command()
+    @commands.command(help="Removes the server from the database.")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def reset(self, ctx):
@@ -259,40 +259,6 @@ class Modmail(commands.Cog):
             description="The server is not setup.", color=discord.Color.red())
             embed.set_footer(text="Modmail")
             await ctx.send(embed=embed)
-
-    @commands.command()
-    @commands.is_owner()
-    async def reload(self, ctx, extension):
-     await self.bot.reload_extension(f"cogs.{extension}")
-     embed = discord.Embed(title='Reload', description=f'{extension} successfully reloaded', color=0xff00c8)
-     await ctx.send(embed=embed)
-
-    @commands.command()
-    @commands.is_owner()
-    async def load(self, ctx, extension):
-     await self.bot.reload_extension(f"cogs.{extension}")
-     embed = discord.Embed(title='loaded', description=f'{extension} successfully loaded', color=0xff00c8)
-     await ctx.send(embed=embed)
-
-    @commands.hybrid_command()
-    @commands.guild_only()
-    async def help(self, ctx):
-        embed = discord.Embed(title="Modmail", description="Modmail is a bot that allows you to send messages to staff members in DMs.", color=0x00ff00)
-        embed.add_field(name="Commands", value="""
-```
-ping - pong
-reply [message] - reply to a ticket
-areply [message] - reply anonymously to a ticket
-close [reason] - close a ticket
-help - this help message
-setup - sets up the server
-reset - removes all data from the db
-snippet [add, remove, list] - add, remove, or list snippets (if no subcommand is given, help will be shown)
-config [category, role] - Allows you to change the config
-transcripts [uuid optional] - Allows you to view the transcripts
-```""", inline=False)
-        embed.set_footer(text="Modmail")
-        await ctx.send(embed=embed)
             
 async def setup(bot):
     await bot.add_cog(Modmail(bot))

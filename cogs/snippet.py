@@ -11,7 +11,7 @@ class Snippet(commands.Cog):
         self.db = Database()
         self.ticket = Ticket(bot)
 
-    @commands.command(aliases=['s'])
+    @commands.command(aliases=['s'], help="Use this command to add snippets, Use snippets, and delete snippets")
     async def snippet(self, ctx, *, option=None):
         if option is None:
             embed = discord.Embed(title="Snippet", description=f"To use a snippet do `{self.bot.command_prefix}snippet [cmd_name]`\n\nHere are the sub commands\nadd <name> <content>\nremove <name>", color=0x00ff00)
@@ -56,15 +56,12 @@ class Snippet(commands.Cog):
             # check if it is a command
             command = await self.db.find_command(ctx.guild.id, option)
             data = await self.db.find_ticket(ctx.channel.id)
-            if data is None:
+            if not data:
                     return await ctx.send("This is not a ticket")
             try:
                 user = await self.bot.fetch_user(data['_id'])  # type: ignore
-            except Exception as e:
-                print(e)
-                return await ctx.send("User not found")
-            if user is None:
-                return await ctx.send("User not found 1")
+            except:
+                return
             #print(command)
             if command:
                 if command['embed'] == True:

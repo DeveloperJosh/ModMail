@@ -10,7 +10,7 @@ class Config(commands.Cog):
         self.db = Database()
 
 
-    @commands.group()
+    @commands.group(help="A group of commands to configure the bot")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def config(self, ctx):

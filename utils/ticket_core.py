@@ -5,6 +5,7 @@ from discord.ext import commands
 from utils.db import Database
 from utils.bot import ModMail
 from typing import Optional, Dict, Union
+from .exceptions import UserAlreadyInAModmailThread
 
 """
 I use # type: ignore to ignore the errors that are caused by the fact that my vscode is broken.
@@ -30,6 +31,9 @@ class Ticket():
     async def create(self, id, guild_id, message: Optional[discord.Message] = None) -> bool:
         """This function creates a ticket"""
         data = await self.bot.fetch_user(id)
+        # check if the user has a ticket
+        if await self.check(id) is True:
+            raise UserAlreadyInAModmailThread(data)
         if data:
             guild_data = await self.db.find_server(int(guild_id))
             guild = self.bot.get_guild(int(guild_id))

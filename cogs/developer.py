@@ -51,5 +51,26 @@ class Developer(commands.Cog):
             embed.add_field(name=user["_id"], value=user["ticket"], inline=False)
       await ctx.send(embed=embed)
 
+    @commands.command()
+    @commands.is_owner()
+    async def reload(self, ctx, extension):
+     await self.bot.reload_extension(f"cogs.{extension}")
+     embed = discord.Embed(title='Reload', description=f'{extension} successfully reloaded', color=0xff00c8)
+     await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.is_owner()
+    async def load(self, ctx, extension):
+     await self.bot.reload_extension(f"cogs.{extension}")
+     embed = discord.Embed(title='loaded', description=f'{extension} successfully loaded', color=0xff00c8)
+     await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.is_owner()
+    async def set_game(self, ctx, *, game):
+     await self.bot.change_presence(activity=discord.Game(name=game))
+     embed = discord.Embed(title='Game', description=f'Game set to {game}', color=0xff00c8)
+     await ctx.send(embed=embed)
+
 async def setup(bot):
     await bot.add_cog(Developer(bot))
