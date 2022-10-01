@@ -1,3 +1,4 @@
+import traceback
 import discord
 from discord.ext import commands
 from discord.ext.commands import MissingPermissions, CheckFailure, CommandNotFound, MissingRequiredArgument, BadArgument, MissingRole
@@ -68,7 +69,19 @@ class ErrorHandling(commands.Cog, name="on command error"):
                 f"I am unable to dm {error.user} because their DMs are disabled.\nPlease ask them to enable their DMs."
             ))
         else:
-            print(f"{error}")
+            error_text = "".join(traceback.format_exception(etype=type(error), value=error, tb=error.__traceback__))[:4000]
+            print(error_text)
+            try:
+                await ctx.channel.send(embed=e(
+                    f":x:Unknown Error!",
+                    f"An unknown error has occurred.\n```{error}```"
+                ))
+            except Exception:
+                await ctx.channel.send(f"An error occured: \n\n```{error}```")
+            try:
+                await self.bot.get_channel(889115230355996703).send(embed=e("Unknown Error", f"```py\n{error_text}\n```"))
+            except Exception:
+                traceback.print_exception(etype=type(error), value=error, tb=error.__traceback__)
 
 async def setup(bot):
     await bot.add_cog(ErrorHandling(bot=bot))

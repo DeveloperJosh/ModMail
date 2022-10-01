@@ -8,6 +8,78 @@ class Developer(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.db = Database()
+
+    @commands.Cog.listener('on_command')
+    async def cmd_logs(self, ctx):
+        if not ctx.guild:
+            return
+        channel = self.bot.get_channel(889112702146986024)
+        await channel.send(embed=discord.Embed(
+            title="Command used:",
+            # show if command was context or slash
+            description=f"Command: {ctx.command}\nAuthor: {ctx.author}\nGuild: {ctx.guild}\nChannel: {ctx.channel}",
+            #description=f"Command: `{ctx.message.content if isinstance(ctx, commands.Context) else ctx.command.name}`",
+            color=discord.Color.blurple()
+        ).set_author(name=f"{ctx.author} | {ctx.author.id}", icon_url=ctx.author.display_avatar.url
+        ).add_field(name="Channel:", value=f"{ctx.channel.mention}\n#{ctx.channel.name} ({ctx.channel.id})"
+        ).add_field(name="Guild:", value=f"{ctx.guild.name}\n{ctx.guild.id}"))
+
+    @commands.Cog.listener('on_guild_join')
+    async def on_guild_join(self, guild: discord.Guild):
+        text_to_send = f"""
+Hey there! Thanks a lot for inviting me!
+If you are a server admin then please run `{self.bot.command_prefix}setup` or `/setup` this server.
+If you face any issues, feel free to join our support server:
+- https://discord.gg/TeSHENet9M
+"""
+
+        log_embed = discord.Embed(
+            title="New guild joined",
+            description=f"{guild.name} ({guild.id})",
+            color=discord.Color.blurple()
+        ).set_author(name=f"{guild.owner}", icon_url=guild.owner.display_avatar.url
+        ).add_field(name="Humans:", value=f"{len(list(filter(lambda m: not m.bot, guild.members)))}"
+        ).add_field(name="Bots:", value=f"{len(list(filter(lambda m: m.bot, guild.members)))}"
+        ).set_footer(text=f"Owner ID: {guild.owner_id}")
+        if guild.icon is not None:
+            log_embed.set_thumbnail(url=guild.icon.url)
+
+        await self.bot.get_channel(889116736077570068).send(embed=log_embed)
+
+        for channel in guild.channels:
+            if "general" in channel.name:
+                try:
+                    return await channel.send(text_to_send)
+                except Exception:
+                    pass
+
+        for channel in guild.channels:
+            if "bot" in channel.name or "cmd" in channel.name or "command" in channel.name:
+                try:
+                    return await channel.send(text_to_send)
+                except Exception:
+                    pass
+
+        for channel in guild.channels:
+            try:
+                return await channel.send(text_to_send)
+            except Exception:
+                pass
+
+    @commands.Cog.listener('on_guild_remove')
+    async def on_guild_remove(self, guild: discord.Guild):
+        log_embed = discord.Embed(
+            title="Guild left",
+            description=f"{guild.name} ({guild.id})",
+            color=discord.Color.red()
+        ).set_author(name=f"{guild.owner}", icon_url=guild.owner.display_avatar.url
+        ).add_field(name="Humans:", value=f"{len(list(filter(lambda m: not m.bot, guild.members)))}"
+        ).add_field(name="Bots:", value=f"{len(list(filter(lambda m: m.bot, guild.members)))}"
+        ).set_footer(text=f"Owner ID: {guild.owner_id}")
+        if guild.icon is not None:
+            log_embed.set_thumbnail(url=guild.icon.url)
+
+        await self.bot.get_channel(889116736077570068).send(embed=log_embed)
     
     @commands.command()
     @commands.guild_only()
