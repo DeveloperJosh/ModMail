@@ -23,17 +23,24 @@ class Snippet(commands.Cog):
             # check if channel is a ticket channel
             if await self.ticket.check(ctx.channel.id) is True:
                 return await ctx.send(embed=discord.Embed(title="Error:x:", description="You can not use this command in a ticket channel", color=0x00ff00))
+
+            if await self.db.max_commands(ctx.guild.id) is True:
+                embed=discord.Embed(title="Error:x:", description="You have reached the maximum amount of commands you can have", color=0x00ff00)
+                embed.add_field(name="How to get more", value="You can vote for the bot on top.gg and get 5 more commands (This is coming soon)")
+                return await ctx.send(embed=embed)
+
             stuff = {}
             def check(m):
              return m.content and m.channel
             await ctx.send("Is this a embed? (yes/no)")
             msg = await self.bot.wait_for('message', check=check)
-            if msg.content == "yes":
-                stuff['embed'] = True
-            elif msg.content == "no":
+            # lower or upper case
+            if msg.content.lower() == "yes" or msg.content == "Yes":
+                stuff["embed"] = True
+            elif msg.content == "no" or msg.content == "No":
                 stuff['embed'] = False
             else:
-                return await ctx.send("Please say yes or no")
+                return await ctx.send("Unknown response")
             await ctx.send("What is the name?")
             msg = await self.bot.wait_for('message', check=check)
             stuff['command'] = msg.content

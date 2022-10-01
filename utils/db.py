@@ -82,7 +82,7 @@ class Database:
         if data:
             return data
         return False
-    
+        
     # testing
     async def save_transcript(self, id, data):
         if await self.find_server(id):
@@ -133,6 +133,14 @@ class Database:
         # try to show all commands in a list
         list = await self.commands.find({"guild": id}).to_list(None)
         return list
+
+    async def max_commands(self, id):
+        # max commands are 5
+        list = await self.find_commands(id)
+        if list:
+            if len(list) >= 5:
+                return True
+        return False
 
     async def create_command(self, id, data):
         if await self.find_command(id, data["command"]):
