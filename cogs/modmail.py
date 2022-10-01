@@ -259,6 +259,13 @@ class Modmail(commands.Cog):
             description="The server is not setup.", color=discord.Color.red())
             embed.set_footer(text="Modmail")
             await ctx.send(embed=embed)
+
+    @commands.command(help="Gives info about the bot and what it is logging.")
+    @commands.guild_only()
+    async def info(self, ctx):
+        embed = discord.Embed(title="Info", description=f"Modmail is a bot that allows users to send messages to the staff team.\nNow with this being a ModMaild bot we do log messages with that being said we log them for up to 30 days or till you the user ask us to remove your data from our system, You can email us at mailhook@gmail.com or join our support server then message any bot developer and they will join your data", color=0x00ff00)
+        embed.set_footer(text="Modmail")
+        await ctx.send(embed=embed)
             
 async def setup(bot):
     await bot.add_cog(Modmail(bot))
