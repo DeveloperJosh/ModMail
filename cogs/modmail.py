@@ -117,7 +117,7 @@ class Modmail(commands.Cog):
         else:
             return
 
-    @commands.hybrid_command()
+    @commands.command()
     @commands.guild_only()
     async def ping(self, ctx, number=1):
        try:
@@ -136,51 +136,39 @@ class Modmail(commands.Cog):
         await ctx.send(e)
         print(e)
 
-
-    @commands.hybrid_command()
+    @commands.command(aliases=["r"])
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
-    async def reply(self, ctx: commands.Context, *, message):
-        try:
-            data = await self.db.find_ticket(ctx.channel.id)
-            id = data['_id'] # type: ignore
-        except:
+    async def reply(self, ctx, *, message):
+        data = await self.db.find_ticket(ctx.channel.id)
+        if data is None:
             return await ctx.send("This is not a ticket channel.")
-        user = self.bot.get_user(int(id))
-        if not await self.ticket.check(int(id)):
-            await ctx.send("This is not a ticket channel.", ephemeral=True)
-            return
-        #embed = discord.Embed(description=f"**{message}**", color=0x00ff00)
-        #embed.set_author(name=ctx.author, icon_url=ctx.author.display_avatar.url)
-        #embed.set_footer(text=f"Server: {ctx.guild.name}") # type: ignore
+        user = self.bot.get_user(data['_id'])  # type: ignore
         try:
-         await user.send(f"**{message.author.name}** in **{message.guild.name}**:\n{message.content}")
-         webhook = await ctx.channel.webhooks()  # type: ignore
-         await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
+         await user.send(f"**{ctx.author.name}** in **{ctx.guild.name}**:\n{message}")
+         await ctx.message.delete()
         except Exception as e:
             print(e)
             raise DMsDisabled(user)
+        webhook = await ctx.channel.webhooks()  # type: ignore
+        await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
         
-
-    @commands.hybrid_command()
+    @commands.command(aliases=["anon-reply", "anonreply", "ar"])
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     async def areply(self, ctx, *, message):
-        msg = await ctx.send("Send reply", ephemeral=True)
-        id = ctx.channel.name.split("-")[1]  # type: ignore
-        user = self.bot.get_user(int(id))
-        embed = discord.Embed(title="Ticket Reply", description=f"**{message}**", color=0x00ff00)
-        embed.set_footer(text=f"Server: {ctx.guild.name}")
-        await user.send(
-        files=[await attachment.to_file() for attachment in ctx.message.attachments],
-        embed=embed)
+        data = await self.db.find_ticket(ctx.channel.id)
+        if data is None:
+            return await ctx.send("This is not a ticket channel.")
+        user = self.bot.get_user(data['_id'])  # type: ignore
+        try:
+         await user.send(f"**Anonymous** in **{ctx.guild.name}**:\n{message}")
+         await ctx.message.delete()
+        except Exception as e:
+            print(e)
+            raise DMsDisabled(user)
         webhook = await ctx.channel.webhooks()  # type: ignore
         await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
-        if ctx.message is None:
-            return
-        else:
-            await ctx.message.delete()
-            await msg.delete()
 
     @commands.command()
     @commands.guild_only()
@@ -244,7 +232,10 @@ class Modmail(commands.Cog):
         embed = discord.Embed(title="Transcripts", description=f"Here are the transcripts for this server", color=0x00ff00)
         embed.set_footer(text="Modmail")
         for i in data['transcripts']:  # type: ignore
-            embed.add_field(name=i, value=f"[check here]({data['transcripts'][i]})", inline=False)  # type: ignore
+            # we have a object inside of a object
+            embed.add_field(name=i, value=f"[Click Me]({data['transcripts'][i]})", inline=False)  # type: ignore
+        if data['transcripts'] == {}:  # type: ignore
+            return await ctx.send("There are no transcripts for this server.")
         await ctx.send(embed=embed)
       else:
         data = await self.db.find_server(ctx.guild.id)
@@ -298,7 +289,7 @@ setup - sets up the server
 reset - removes all data from the db
 snippet [add, remove, list] - add, remove, or list snippets (if no subcommand is given, help will be shown)
 config [category, role] - Allows you to change the config
-transcripts [uuid] - Allows you to view the transcripts (uuid is optional)
+transcripts [uuid optional] - Allows you to view the transcripts
 ```""", inline=False)
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)

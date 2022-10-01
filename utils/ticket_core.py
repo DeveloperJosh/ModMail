@@ -87,6 +87,9 @@ class Ticket():
       return await channel.create_webhook(name=webhook_name)  # type: ignore
 
     async def create_transcript(self, channel: discord.TextChannel, guild) -> None:
+     """This function creates a transcript of the ticket"""
+
+     # Making the file
      channel = self.bot.get_channel(channel.id)  # type: ignore
      text = ""
      all_msgs = [all_msg async for all_msg in channel.history(limit=None)]
@@ -102,7 +105,6 @@ class Ticket():
      transcript = await self.db.find_server(guild.id)
      if not transcript['transcripts']:  # type: ignore
       transcript['transcripts'] = {}  # type: ignore
-     transcript['transcripts'][randomly_generator_id] = "https://discord.com/channels/{}/{}/{}".format(guild.id, msg.channel.id, msg.id)  # type: ignore
-     # add link to the transcript
-     await self.db.update_server(guild.id, transcript)
+     transcript['transcripts'][randomly_generator_id] = msg.jump_url  # type: ignore
+     await self.db.update_server(guild.id, transcript)  # type: ignore
      await channel.delete()
