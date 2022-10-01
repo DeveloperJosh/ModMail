@@ -2,6 +2,7 @@
 # Note: This file made by Nirlep, file from MailHook #
 ######################################################
 
+from click import command
 import discord
 from typing import Optional, Union
 from discord.ext.commands import CommandError

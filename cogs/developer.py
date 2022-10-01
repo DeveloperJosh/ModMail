@@ -17,7 +17,7 @@ class Developer(commands.Cog):
         await channel.send(embed=discord.Embed(
             title="Command used:",
             # show if command was context or slash
-            description=f"Command: {ctx.command}\nAuthor: {ctx.author}\nGuild: {ctx.guild}\nChannel: {ctx.channel}",
+            description=f"Command: {ctx.command}",
             #description=f"Command: `{ctx.message.content if isinstance(ctx, commands.Context) else ctx.command.name}`",
             color=discord.Color.blurple()
         ).set_author(name=f"{ctx.author} | {ctx.author.id}", icon_url=ctx.author.display_avatar.url
@@ -143,6 +143,21 @@ If you face any issues, feel free to join our support server:
      await self.bot.change_presence(activity=discord.Game(name=game))
      embed = discord.Embed(title='Game', description=f'Game set to {game}', color=0xff00c8)
      await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.is_owner()
+    async def debug(self, ctx, *, mode):
+        if mode == 'on':
+         self.bot.debug = True
+         embed = discord.Embed(title='Debug', description=f'Debug mode is now on', color=0xff00c8)
+         await ctx.send(embed=embed)
+        elif mode == 'off':
+         self.bot.debug = False
+         embed = discord.Embed(title='Debug', description=f'Debug mode is now off', color=0xff00c8)
+         await ctx.send(embed=embed)
+        else:
+         embed = discord.Embed(title='Debug', description=f'Invalid mode', color=0xff00c8)
+         await ctx.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Developer(bot))
