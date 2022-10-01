@@ -204,7 +204,7 @@ class Modmail(commands.Cog):
          embed.set_footer(text="Modmail")
          await user.send(embed=embed)
 
-    @commands.hybrid_command(name="set-up", aliases=["setup"],help="Sets up the modmail system")
+    @commands.hybrid_command(name="setup", aliases=["set-up"],help="Sets up the modmail system")
     @commands.guild_only()
     @commands.bot_has_permissions(manage_channels=True)
     @commands.has_permissions(administrator=True)
@@ -277,7 +277,7 @@ class Modmail(commands.Cog):
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)
 
-    @commands.command(help="Lets users opt back into the transcript system.")
+    @commands.hybrid_command(help="Lets users opt back into the transcript system.")
     @commands.guild_only()
     async def optin(self, ctx):
         if not await self.db.find_user(ctx.author.id):

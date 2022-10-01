@@ -30,8 +30,92 @@ class ServersDropdown(discord.ui.Select):
         options = [discord.SelectOption(label=server.name, value=str(server.id), description=f"Server ID: {server.id}") for server in servers]
         super().__init__(placeholder="Please select a guild to start a modmail thread with.", options=options, row=0)
 
+    async def callback(self, interaction: discord.Interaction):
+        self.selected_options = [option for option in self.values]
+        await interaction.response.send_message("Please press the continue button to continue.", ephemeral=True)
 
 class ServersDropdownView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=300)
+        self.yes = False
+
+    @discord.ui.button(label="Continue", style=discord.ButtonStyle.blurple, row=1)
+    async def c(self, b, i):
+        if not self.children[2].values:  # type: ignore
+            return await i.response.send_message("Please select a server first.", ephemeral=True)
+        self.yes = True
+        self.stop()
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger, row=1)
+    async def c_(self, b, i):
+        self.stop()
+
+class RolesDropdown(discord.ui.Select):
+    def __init__(self, roles: List[discord.Role]):
+        options = [discord.SelectOption(label=role.name, value=str(role.id), description=f"Role ID: {role.id}") for role in roles]
+        super().__init__(placeholder="Please select a role to start a modmail thread with.", options=options, row=0)
+        # show the name of what was selected
+        self.selected_options = []
+
+    async def callback(self, interaction: discord.Interaction):
+        self.selected_options = [option for option in self.values]
+        await interaction.response.send_message("Please press the continue button to continue.", ephemeral=True)
+
+class RolesDropdownView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=300)
+        self.yes = False
+
+    @discord.ui.button(label="Continue", style=discord.ButtonStyle.blurple, row=1)
+    async def c(self, b, i):
+        if not self.children[2].values:  # type: ignore
+            return await i.response.send_message("Please select a server first.", ephemeral=True)
+        self.yes = True
+        self.stop()
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger, row=1)
+    async def c_(self, b, i):
+        self.stop()
+
+class ChannelsDropdown(discord.ui.Select):
+    def __init__(self, channels: List[discord.TextChannel]):
+        options = [discord.SelectOption(label=channel.name, value=str(channel.id), description=f"Channel ID: {channel.id}") for channel in channels]
+        super().__init__(placeholder="Please select a channel to start a modmail thread with.", options=options, row=0)
+        # show the name of what was selected
+        self.selected_options = []
+
+    async def callback(self, interaction: discord.Interaction):
+        self.selected_options = [option for option in self.values]
+        await interaction.response.send_message("Please press the continue button to continue.", ephemeral=True)
+
+class ChannelsDropdownView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=300)
+        self.yes = False
+
+    @discord.ui.button(label="Continue", style=discord.ButtonStyle.blurple, row=1)
+    async def c(self, b, i):
+        if not self.children[2].values:  # type: ignore
+            return await i.response.send_message("Please select a server first.", ephemeral=True)
+        self.yes = True
+        self.stop()
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger, row=1)
+    async def c_(self, b, i):
+        self.stop()
+
+class CategoryDropdown(discord.ui.Select):
+    def __init__(self, categories: List[discord.CategoryChannel]):
+        options = [discord.SelectOption(label=category.name, value=str(category.id), description=f"Category ID: {category.id}") for category in categories]
+        super().__init__(placeholder="Please select a category to start a modmail thread with.", options=options, row=0)
+        # show the name of what was selected
+        self.selected_options = []
+
+    async def callback(self, interaction: discord.Interaction):
+        self.selected_options = [option for option in self.values]
+        await interaction.response.send_message("Please press the continue button to continue.", ephemeral=True)
+
+class CategoryDropdownView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=300)
         self.yes = False
