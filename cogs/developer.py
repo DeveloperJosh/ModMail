@@ -126,9 +126,15 @@ If you face any issues, feel free to join our support server:
     @commands.command()
     @commands.is_owner()
     async def reload(self, ctx, extension):
-     await self.bot.reload_extension(f"cogs.{extension}")
-     embed = discord.Embed(title='Reload', description=f'{extension} successfully reloaded', color=0xff00c8)
-     await ctx.send(embed=embed)
+     try:
+      await self.bot.reload_extension(f"cogs.{extension}")
+      await self.bot.tree.sync()
+      embed = discord.Embed(title='Reload', description=f'{extension} successfully reloaded', color=0xff00c8)
+      await ctx.send(embed=embed)
+     except Exception as e:
+        print(e)
+        embed = discord.Embed(title='Reload', description=f'{extension} could not be reloaded', color=0xff0000)
+        await ctx.send(embed=embed)
 
     @commands.command()
     @commands.is_owner()

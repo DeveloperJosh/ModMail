@@ -14,8 +14,8 @@ class Snippet(commands.Cog):
     @commands.hybrid_command(aliases=['s'], help="Use this command to add snippets, Use snippets, and delete snippets")
     async def snippet(self, ctx, *, option=None):
         if option is None:
-            embed = discord.Embed(title="Snippet", description=f"To use a snippet do `{self.bot.command_prefix}snippet [cmd_name]`\n\nHere are the sub commands\nadd <name> <content>\nremove <name>", color=0x00ff00)
-            embed.set_footer(text="Modmail")
+            #embed = discord.Embed(title="Config", description=f"This command is used to edit the config of the bot.\n\n**Usage:**\n`{self.bot.command_prefix}edit-config [setting] [value]`\n\n**Settings:**\n`role` - The role that can start a modmail thread.\n`category` - The category that modmail threads will be created in.\n`transcripts` - The channel that transcripts will be sent to.\n\nNote you can use slash commands here", color=0x00ff00)
+            embed = discord.Embed(title="Snippet", description=f"This command is used to add, use, and delete snippets.\n\n**Usage:**\n`{self.bot.command_prefix}snippet [option] [name] [content]`\n\n**Options:**\n`add` - Add a snippet.\n`use` - Use a snippet.\n`delete` - Delete a snippet.\nTo use a snippet just do this `snippet [name of snippet]`.\n\nNote you can use slash commands here", color=0x00ff00)
             await ctx.send(embed=embed)
 
         elif option.startswith("add"):
