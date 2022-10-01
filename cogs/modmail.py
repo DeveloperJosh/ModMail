@@ -119,7 +119,8 @@ class Modmail(commands.Cog):
 
     @commands.hybrid_command(help="Checks the status of the bot.")
     @commands.guild_only()
-    async def ping(self, ctx, number=1):
+    async def ping(self, ctx):
+       number = 1
        try:
         msg = await ctx.send("Pinging...")
         db_ping = await self.db.add_user(number, {"ping": "pong"})
