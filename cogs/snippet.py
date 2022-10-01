@@ -20,6 +20,9 @@ class Snippet(commands.Cog):
 
         elif option.startswith("add"):
             # start asking for name and content and if it is a embed or not
+            # check if channel is a ticket channel
+            if await self.ticket.check(ctx.channel.id) is True:
+                return await ctx.send(embed=discord.Embed(title="Error:x:", description="You can not use this command in a ticket channel", color=0x00ff00))
             stuff = {}
             def check(m):
              return m.content and m.channel
