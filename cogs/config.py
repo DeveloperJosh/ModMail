@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from pytz import common_timezones
 from utils.db import Database
 from utils.embed import Embed, error_embed
 from utils.dropdown import RolesDropdown, RolesDropdownView, CategoryDropdown, CategoryDropdownView, ChannelsDropdown, ChannelsDropdownView
