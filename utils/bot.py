@@ -34,6 +34,8 @@ class ModMail(commands.Bot):
             #guild = discord.Object(self.testing_guild_id)
             #self.tree.copy_global_to(guild=guild)
             #await self.tree.sync(guild=guild)
+        # load slash commands
+        await self.tree.sync()
 
 async def main():
 

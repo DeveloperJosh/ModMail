@@ -117,7 +117,7 @@ class Modmail(commands.Cog):
         else:
             return
 
-    @commands.command(help="Checks the status of the bot.")
+    @commands.hybrid_command(help="Checks the status of the bot.")
     @commands.guild_only()
     async def ping(self, ctx, number=1):
        try:
@@ -136,41 +136,48 @@ class Modmail(commands.Cog):
         await ctx.send(e)
         print(e)
 
-    @commands.command(aliases=["r"], help="Reply to a ticket.")
+    @commands.hybrid_command(aliases=["r"], help="Reply to a ticket.")
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     async def reply(self, ctx, *, message):
         data = await self.db.find_ticket(ctx.channel.id)
         if data is None:
-            return await ctx.send("This is not a ticket channel.")
-        user = self.bot.get_user(data['_id'])  # type: ignore
+            return await ctx.send("This is not a ticket channel.", ephemeral=True)
         try:
+            user = await self.bot.fetch_user(data['_id'])  # type: ignore
+        except:
+             return await ctx.send("This user is not in the database.")
+        try:
+         await ctx.send("Reply sent.", delete_after=5)
          await user.send(f"**{ctx.author.name}** in **{ctx.guild.name}**:\n{message}")
-         await ctx.message.delete()
+         #await ctx.message.delete()
         except Exception as e:
             print(e)
             raise DMsDisabled(user)
         webhook = await ctx.channel.webhooks()  # type: ignore
         await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
         
-    @commands.command(aliases=["anon-reply", "anonreply", "ar"], help="Reply to a ticket anonymously.")
+    @commands.hybrid_command(name="anon-reply", aliases=["anonreply", "ar", "areply"], help="Reply to a ticket anonymously.")
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     async def areply(self, ctx, *, message):
         data = await self.db.find_ticket(ctx.channel.id)
         if data is None:
             return await ctx.send("This is not a ticket channel.")
-        user = self.bot.get_user(data['_id'])  # type: ignore
         try:
+            user = await self.bot.fetch_user(data['_id'])  # type: ignore
+        except:
+             return await ctx.send("This user is not in the database.")
+        try:
+         await ctx.send("Reply sent.", delete_after=5)
          await user.send(f"**Anonymous** in **{ctx.guild.name}**:\n{message}")
-         await ctx.message.delete()
         except Exception as e:
             print(e)
             raise DMsDisabled(user)
         webhook = await ctx.channel.webhooks()  # type: ignore
         await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
 
-    @commands.command(help="Close a ticket.")
+    @commands.hybrid_command(help="Close a ticket.")
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     async def close(self, ctx, *, reason=None):
@@ -197,7 +204,7 @@ class Modmail(commands.Cog):
          embed.set_footer(text="Modmail")
          await user.send(embed=embed)
 
-    @commands.command(help="Sets up the modmail system, this will create a category and a channel for the bot to send messages to.")
+    @commands.hybrid_command(name="set-up", aliases=["setup"],help="Sets up the modmail system")
     @commands.guild_only()
     @commands.bot_has_permissions(manage_channels=True)
     @commands.has_permissions(administrator=True)
@@ -220,7 +227,7 @@ class Modmail(commands.Cog):
             embed.set_footer(text="Modmail")
             await ctx.send(embed=embed)
 
-    @commands.command(help="Shows all of the transcripts for the server.")
+    @commands.hybrid_command(help="Shows all of the transcripts for the server.")
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
     async def transcripts(self, ctx, *, uuid=None):
@@ -245,7 +252,7 @@ class Modmail(commands.Cog):
             return await ctx.send("This transcript does not exist.")
         await ctx.send(data['transcripts'][uuid])  # type: ignore
 
-    @commands.command(help="Removes the server from the database.")
+    @commands.hybrid_command(help="Removes the server from the database.")
     @commands.guild_only()
     @commands.has_permissions(administrator=True)
     async def reset(self, ctx):
@@ -260,7 +267,27 @@ class Modmail(commands.Cog):
             embed.set_footer(text="Modmail")
             await ctx.send(embed=embed)
 
-    @commands.command(help="Gives info about the bot and what it is logging.")
+    @commands.hybrid_command(help="Lets users opt out of the transcript system.")
+    @commands.guild_only()
+    async def optout(self, ctx):
+        if await self.db.find_user(ctx.author.id):
+            return await ctx.send("You are already opted out.")
+        await self.db.add_user(ctx.author.id, {'optout': True})
+        embed = discord.Embed(title="Opt Out", description="You have opted out of the transcript system.", color=0x00ff00)
+        embed.set_footer(text="Modmail")
+        await ctx.send(embed=embed)
+
+    @commands.command(help="Lets users opt back into the transcript system.")
+    @commands.guild_only()
+    async def optin(self, ctx):
+        if not await self.db.find_user(ctx.author.id):
+            return await ctx.send("You are not opted out.")
+        await self.db.delete_user(ctx.author.id)
+        embed = discord.Embed(title="Opt In", description="You have opted back into the transcript system.", color=0x00ff00)
+        embed.set_footer(text="Modmail")
+        await ctx.send(embed=embed)
+
+    @commands.hybrid_command(help="Gives info about the bot and what it is logging.")
     @commands.guild_only()
     async def info(self, ctx):
         embed = discord.Embed(title="Info", description=f"Modmail is a bot that allows users to send messages to the staff team.\nNow with this being a ModMaild bot we do log messages with that being said we log them for up to 30 days or till you the user ask us to remove your data from our system, You can email us at mailhook@gmail.com or join our support server then message any bot developer and they will join your data", color=0x00ff00)

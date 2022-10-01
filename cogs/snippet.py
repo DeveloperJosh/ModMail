@@ -11,7 +11,7 @@ class Snippet(commands.Cog):
         self.db = Database()
         self.ticket = Ticket(bot)
 
-    @commands.command(aliases=['s'], help="Use this command to add snippets, Use snippets, and delete snippets")
+    @commands.hybrid_command(aliases=['s'], help="Use this command to add snippets, Use snippets, and delete snippets")
     async def snippet(self, ctx, *, option=None):
         if option is None:
             embed = discord.Embed(title="Snippet", description=f"To use a snippet do `{self.bot.command_prefix}snippet [cmd_name]`\n\nHere are the sub commands\nadd <name> <content>\nremove <name>", color=0x00ff00)

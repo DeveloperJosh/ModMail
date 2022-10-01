@@ -50,7 +50,7 @@ class Help(commands.Cog):
     def __init__(self, bot: ModMail):
         self.bot = bot
 
-    @commands.command(name="help", help="Get some help.")
+    @commands.hybrid_command(name="help", help="Get some help.")
     async def help(self, ctx: commands.Context, command: str = None):
         if command is None:
             return await ctx.reply(embed=await get_bot_help(self.bot))
