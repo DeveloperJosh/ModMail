@@ -60,12 +60,12 @@ class ErrorHandling(commands.Cog, name="on command error"):
             embed = discord.Embed(title="ERROR!", description=f"{error}")
             await ctx.send(embed=embed)
         elif isinstance(error, TicketCategoryNotFound):
-            await ctx.reply(embed=e(
+            await ctx.reply(embed=error_embed(
                 f"Not Found!",
                 "Uh oh! Looks like the ticket category was not found! Maybe the category was deleted.\nPlease use `?setup` to set a new one."
             ))
         elif isinstance(error, DMsDisabled):
-            await ctx.reply(embed=e(
+            await ctx.reply(embed=error_embed(
                 f"Unable to DM!",
                 f"I am unable to dm {error.user} because their DMs are disabled.\nPlease ask them to enable their DMs."
             ))
