@@ -1,3 +1,4 @@
+import logging
 import time
 from typing import Dict
 import discord
@@ -68,7 +69,7 @@ class Modmail(commands.Cog):
                  # Most of this code is from the ticket core ./utils/ticket_core.py
                  await self.ticket.create(message.author.id, guild.id, message)
                 except Exception as e:
-                    print(e)
+                    logging.error(e)
                     await message.author.send(embed=error_embed("Oh no!", "Something went wrong while creating your ticket. Please try again later."))
             else:
                try:
@@ -79,7 +80,7 @@ class Modmail(commands.Cog):
                 # add a reaction to the message
                 await message.add_reaction("✅")
                except Exception as e:
-                print(e)
+                logging.error(e)
                 await message.channel.send("An error occured. Please try again later.")
 
     @commands.Cog.listener(name="on_message")
@@ -108,11 +109,11 @@ class Modmail(commands.Cog):
                     await message.delete()
                 except Exception as e:
                     await message.channel.send("An error occured. Please check the console for more information.")
-                    print(e)
+                    logging.error(e)
             except discord.Forbidden:
                 await message.channel.send("I could not send your message to the user. Please make sure they have DMs enabled.")
             except Exception as e:
-                print(e)
+                logging.error(e)
                 await message.channel.send("An error occured. Please try again later.")
         else:
             return
@@ -134,8 +135,8 @@ class Modmail(commands.Cog):
         embed = custom_embed("Ping:ping_pong:", f"DB Ping: {db_ping}ms\nBot Ping: {bot_ping}ms")
         await msg.edit(content=None, embed=embed)
        except Exception as e:
-        await ctx.send(e)
-        print(e)
+        logging.error(e)
+        return await ctx.send(e)
 
     @commands.hybrid_command(aliases=["r"], help="Reply to a ticket.")
     @commands.guild_only()
@@ -173,7 +174,7 @@ class Modmail(commands.Cog):
          await ctx.send("Reply sent.", delete_after=5)
          await user.send(f"**Anonymous** in **{ctx.guild.name}**:\n{message}")
         except Exception as e:
-            print(e)
+            logging.error(e)
             raise DMsDisabled(user)
         webhook = await ctx.channel.webhooks()  # type: ignore
         await webhook[0].send(message, username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore

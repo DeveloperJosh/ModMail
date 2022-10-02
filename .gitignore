@@ -2,5 +2,5 @@
 .env
 __pycache__
 .idea
-discord.log
+*.log
 venv

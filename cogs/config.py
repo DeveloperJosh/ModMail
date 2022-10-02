@@ -1,3 +1,4 @@
+import logging
 import discord
 from discord.ext import commands
 from utils.db import Database
@@ -51,7 +52,7 @@ class Config(commands.Cog):
              else:
                 await edit_me.edit(embed=Embed(title="Config", description="Cancelled", color=0x00ff00), view=None)
             except Exception as e:
-                print(e)
+                logging.error(e)
                 error = error_embed("Error:x:", f"It seems like you may have more then 25 roles, please try `{self.bot.command_prefix}edit-config role [role]`")
                 await ctx.send(embed=error)
                 return
@@ -64,7 +65,7 @@ class Config(commands.Cog):
                 await self.db.update_server(ctx.guild.id, {"staff_role": role.id})
                 await ctx.send(embed=Embed(title="Config", description=f"Successfully set the staff role to {role.mention}", color=0x00ff00))
                except Exception as e:
-                print(e)
+                logging.error(e)
                 await ctx.send(embed=error_embed("Error:x:", "That role does not exist"))
                 return
         elif setting == "category":
@@ -81,7 +82,7 @@ class Config(commands.Cog):
                  else:
                     await edit_me.edit(embed=Embed(title="Config", description="Cancelled", color=0x00ff00), view=None)
                 except Exception as e:
-                    print(e)
+                    logging.error(e)
                     error = error_embed("Error:x:", f"It seems like you may have more then 25 categories, please try `{self.bot.command_prefix}edit-config category [category]\nSorry that you cannot @ping the role.`")
                     await ctx.send(embed=error)
                     return
@@ -94,7 +95,7 @@ class Config(commands.Cog):
                     await self.db.update_server(ctx.guild.id, {"category": category.id})
                     await ctx.send(embed=Embed(title="Config", description=f"Successfully set the category to {category.mention}", color=0x00ff00))
                  except Exception as e:
-                    print(e)
+                    logging.error(e)
                     await ctx.send(embed=error_embed("Error:x:", "That category does not exist, try using the category name\nSorry that you cannot #mention the category."))
                     return
         elif setting == "transcripts":
@@ -111,7 +112,7 @@ class Config(commands.Cog):
                  else:
                     await edit_me.edit(embed=Embed(title="Config", description="Cancelled", color=0x00ff00), view=None)
                 except Exception as e:
-                    print(e)
+                    logging.error(e)
                     error = error_embed("Error:x:", f"It seems like you may have more then 25 text channels, please try `{self.bot.command_prefix}edit-config transcripts [channel].\nSorry that you cannot #mention the channel.`")
                     await ctx.send(embed=error)
                     return
@@ -124,7 +125,7 @@ class Config(commands.Cog):
                     await self.db.update_server(ctx.guild.id, {"transcript_channel": channel.id})
                     await ctx.send(embed=Embed(title="Config", description=f"Successfully set the transcript channel to {channel.mention}", color=0x00ff00))
                  except Exception as e:
-                    print(e)
+                    logging.error(e)
                     await ctx.send(embed=error_embed("Error:x:", "That channel does not exist, try using the channel name"))
                     return
         elif setting == "help":

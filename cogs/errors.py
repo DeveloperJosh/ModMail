@@ -1,3 +1,4 @@
+import logging
 import traceback
 import discord
 from discord.ext import commands
@@ -76,7 +77,9 @@ class ErrorHandling(commands.Cog, name="on command error"):
                     f":x:Unknown Error!",
                     f"An unknown error has occurred.\n```{error}```"
                 ))
-            except Exception:
+                logging.error(error)
+            except Exception as e:
+                logging.error(e)
                 await ctx.channel.send(f"An error occured: \n\n```{error}```")
             try:
                 await self.bot.get_channel(889115230355996703).send(embed=e("Unknown Error", f"```py\n{error_text}\n```"))

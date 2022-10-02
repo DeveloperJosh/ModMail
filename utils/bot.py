@@ -3,6 +3,7 @@ import logging.handlers
 from aiohttp import ClientSession
 import os
 from dotenv import load_dotenv
+import datetime
 
 load_dotenv()
 
@@ -39,7 +40,7 @@ class ModMail(commands.Bot):
              await self.tree.sync()
              print("Slash commands synced!")
             except Exception as e:
-                print(f"Failed to sync slash commands: {e}")
+                logging.error(f"Failed to sync slash commands: {e}")
         else:
             pass
 
@@ -67,6 +68,22 @@ class ModMail(commands.Bot):
 async def main():
 
     logging.basicConfig(level=logging.INFO)
+    # log to file
+    logger = logging.getLogger("discord")
+    logger.setLevel(logging.INFO)
+    time = datetime.datetime.now()
+    handler = logging.handlers.RotatingFileHandler(
+        # save to logs folder
+        filename=f"logs/{time.strftime('%Y-%m-%d')}.log",
+        encoding="utf-8", 
+        mode="a", 
+        maxBytes=10 * 1024 * 1024, 
+        backupCount=5
+    )
+    handler.setFormatter(
+        logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+    )
+    logger.addHandler(handler)
     intents = discord.Intents.default()
     intents.members = True
     intents.message_content = True
