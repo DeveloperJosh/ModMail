@@ -73,9 +73,9 @@ class ErrorHandling(commands.Cog, name="on command error"):
             error_text = f"```py {traceback.format_exc()} ```"
             print(error_text)
             try:
-                await ctx.channel.send(embed=e(
-                    f":x:Unknown Error!",
-                    f"An unknown error has occurred.\n```{error}```"
+                await ctx.reply(embed=error_embed(
+                    "An error has occured!",
+                    f"```py {error}```"
                 ))
                 logging.error(error)
             except Exception as e:
