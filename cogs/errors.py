@@ -9,6 +9,7 @@ from utils.exceptions import (
     UserAlreadyInAModmailThread, DMsDisabled, NoBots,
     GuildOnlyPls
 )
+from utils.embed import error_embed
 
 def e(title: str, desc: str) -> discord.Embed:
     return discord.Embed(title=title, description=desc, color=discord.Color.red())
@@ -40,10 +41,9 @@ class ErrorHandling(commands.Cog, name="on command error"):
             perms = error.missing_permissions
             if "embed_links" in perms:
                 return await ctx.reply("Please give me embed link perms.")
-            await ctx.reply(embed=e(
-                f"I'm missing permissions!",
-                "I need **{}** perms to run this command.".format(' '.join(error.missing_permissions[0].split('_')).title())
-            ))
+                # show the name of the missing perms
+            embed = error_embed("Missing Permissions", f"{error}")
+            await ctx.send(embed=embed)
         elif isinstance(error, MissingRole):
             embed = discord.Embed(title="ERROR!", description=f"{error}")
             await ctx.send(embed=embed)    
@@ -70,7 +70,7 @@ class ErrorHandling(commands.Cog, name="on command error"):
                 f"I am unable to dm {error.user} because their DMs are disabled.\nPlease ask them to enable their DMs."
             ))
         else:
-            error_text = "".join(traceback.format_exception(etype=type(error), value=error, tb=error.__traceback__))[:4000]
+            error_text = f"```py {traceback.format_exc()} ```"
             print(error_text)
             try:
                 await ctx.channel.send(embed=e(
@@ -84,7 +84,7 @@ class ErrorHandling(commands.Cog, name="on command error"):
             try:
                 await self.bot.get_channel(889115230355996703).send(embed=e("Unknown Error", f"```py\n{error_text}\n```"))
             except Exception:
-                traceback.print_exception(etype=type(error), value=error, tb=error.__traceback__)
+                print("Unable to send error to error channel")
 
 async def setup(bot):
     await bot.add_cog(ErrorHandling(bot=bot))

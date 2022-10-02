@@ -234,8 +234,11 @@ class Modmail(commands.Cog):
     @commands.has_permissions(manage_messages=True)
     async def transcripts(self, ctx, *, uuid=None):
       if uuid is None:
-        data = await self.db.find_server(ctx.guild.id)
-        if data is None:
+        try:
+         data = await self.db.find_server(ctx.guild.id)
+        except:
+            return await ctx.send("This server has not been setup.")
+        if not data:
             return await ctx.send("This server has not been setup yet.")
         # show a list of the links to the transcripts
         embed = discord.Embed(title="Transcripts", description=f"Here are the transcripts for this server", color=0x00ff00)
