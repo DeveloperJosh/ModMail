@@ -11,9 +11,6 @@ from utils.exceptions import (
 )
 from utils.embed import error_embed
 
-def e(title: str, desc: str) -> discord.Embed:
-    return discord.Embed(title=title, description=desc, color=discord.Color.red())
-
 class ErrorHandling(commands.Cog, name="on command error"):
     def __init__(self, bot):
         self.bot = bot
@@ -82,7 +79,7 @@ class ErrorHandling(commands.Cog, name="on command error"):
                 logging.error(e)
                 await ctx.channel.send(f"An error occured: \n\n```{error}```")
             try:
-                await self.bot.get_channel(889115230355996703).send(embed=e("Unknown Error", f"```py\n{error_text}\n```"))
+                await self.bot.get_channel(889115230355996703).send(embed=error_embed("Unknown Error", f"```py\n{error_text}\n```"))
             except Exception:
                 print("Unable to send error to error channel")
 

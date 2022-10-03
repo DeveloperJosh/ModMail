@@ -192,16 +192,16 @@ class Modmail(commands.Cog):
         if reason is None:
          data = await self.db.find_ticket(ctx.channel.id)
          user = self.bot.get_user(int(data['_id'])) # type: ignore
-         await self.db.delete_user(user.id)
          embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed", color=0x00ff00)
          embed.set_footer(text="Modmail")
          await user.send(embed=embed)
-         await self.ticket.create_transcript(ctx.channel, ctx.guild)
+         await self.ticket.create_transcript(ctx.channel, ctx.guild, user.id)
+         await self.db.delete_user(user.id)
         else:
          data = await self.db.find_ticket(ctx.channel.id)
          user = self.bot.get_user(int(data['_id'])) # type: ignore
+         await self.ticket.create_transcript(ctx.channel, ctx.guild, user.id)
          await self.db.delete_user(user.id)
-         await self.ticket.create_transcript(ctx.channel, ctx.guild)
          embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed\nReason: {reason}", color=0x00ff00)
          embed.set_footer(text="Modmail")
          await user.send(embed=embed)

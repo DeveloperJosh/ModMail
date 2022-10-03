@@ -90,10 +90,19 @@ class Ticket():
             return discord.utils.get(webhooks, name=webhook_name)  # type: ignore
       return await channel.create_webhook(name=webhook_name)  # type: ignore
 
-    async def create_transcript(self, channel: discord.TextChannel, guild) -> None:
+    async def create_transcript(self, channel: discord.TextChannel, guild, userId: int) -> None:
      """This function creates a transcript of the ticket"""
 
      # TODO: Add the optout feature to the transcript
+
+     # if user is in self.db.find_opt() remove them from the transcript
+     if await self.db.find_opt(userId):
+      data = await self.db.find_server(channel.guild.id)
+      transcript_db_channel = self.bot.get_channel(data['transcript_channel'])  # type: ignore
+      if transcript_db_channel is None:
+        return
+      await transcript_db_channel.send("Sorry, But the Owner of this ticket has opted out of the transcript system, So no transcript was made.")  # type: ignore
+      await channel.delete()
 
      # Making the file
      channel = self.bot.get_channel(channel.id)  # type: ignore

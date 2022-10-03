@@ -1,5 +1,7 @@
 import logging
+from typing import Literal
 import discord
+from discord import app_commands
 from discord.ext import commands
 from utils.db import Database
 from utils.embed import Embed, error_embed
@@ -14,7 +16,8 @@ class Config(commands.Cog):
         self.db = Database()
 
     @commands.hybrid_command(help="Configure the bot", aliases=['c'])
-    @commands.has_permissions(administrator=True)
+    # server manager
+    @commands.has_guild_permissions(manage_guild=True)
     @commands.guild_only()
     async def config(self, ctx):
         # show the config menu like a help command
@@ -34,7 +37,7 @@ class Config(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(name="edit-config", help="Edit the config settings", aliases=['ec'])
-    @commands.has_permissions(administrator=True)
+    @commands.has_guild_permissions(manage_guild=True)
     @commands.guild_only()
     async def edit_config(self, ctx, setting=None, *, value=None):
         if setting == "role":
@@ -113,7 +116,7 @@ class Config(commands.Cog):
                     await edit_me.edit(embed=Embed(title="Config", description="Cancelled", color=0x00ff00), view=None)
                 except Exception as e:
                     logging.error(e)
-                    error = error_embed("Error:x:", f"It seems like you may have more then 25 text channels, please try `{self.bot.command_prefix}edit-config transcripts [channel].\nSorry that you cannot #mention the channel.`")
+                    error = error_embed("Error:x:", f"It seems like you may have more then 25 text channels, please try `{self.bot.command_prefix}edit-config transcripts [channel]`.\nSorry that you cannot #mention the channel.")
                     await ctx.send(embed=error)
                     return
             else:
@@ -134,6 +137,42 @@ class Config(commands.Cog):
         else:
             embed = Embed(title="Config", description=f"This command is used to edit the config of the bot.\n\n**Usage:**\n`{self.bot.command_prefix}edit-config [setting] [value]`\n\n**Settings:**\n`role` - The role that can start a modmail thread.\n`category` - The category that modmail threads will be created in.\n`transcripts` - The channel that transcripts will be sent to.\n\nNote you can use slash commands here", color=0x00ff00)
             await ctx.send(embed=embed)
+
+    # app_commands
+    @app_commands.command(name="config2", description="Edit the config of the bot")
+    @app_commands.checks.has_permissions(manage_guild=True)
+    async def app_config(self, ctx, role: discord.Role = None, category: discord.CategoryChannel = None, transcripts: discord.TextChannel = None):
+        if role is not None:
+            # check if bot has perms
+            if not ctx.guild.me.guild_permissions.manage_roles:
+                await ctx.response.send_message(embed=error_embed("Error:x:", "I do not have permission to manage roles"))
+                return
+            if not await self.db.find_server(ctx.guild.id):
+               await ctx.response.send_message(embed=error_embed("Error:x:", "You need to run `/setup` first"))
+            await self.db.update_server(ctx.guild.id, {"role": role.id})
+            await ctx.response.send_message(embed=Embed(title="Config", description=f"Successfully set the role to {role.mention}", color=0x00ff00))
+        elif category is not None:
+            if not ctx.guild.me.guild_permissions.manage_channels:
+                await ctx.response.send_message(embed=error_embed("Error:x:", "I do not have permission to manage channels"))
+                return
+            if not await self.db.find_server(ctx.guild.id):
+                await ctx.response.send_message(embed=error_embed("Error:x:", "You need to run `/setup` first"))
+            await self.db.update_server(ctx.guild.id, {"category": category.id})
+            await ctx.response.send_message(embed=Embed(title="Config", description=f"Successfully set the category to {category.mention}", color=0x00ff00))
+        elif transcripts is not None:
+            if not ctx.guild.me.guild_permissions.manage_channels:
+                await ctx.response.send_message(embed=error_embed("Error:x:", "I do not have permission to manage channels"))
+                return
+            if not await self.db.find_server(ctx.guild.id):
+                await ctx.response.send_message(embed=error_embed("Error:x:", "You need to run `/setup` first"))
+            await self.db.update_server(ctx.guild.id, {"transcript_channel": transcripts.id})
+            await ctx.response.send_message(embed=Embed(title="Config", description=f"Successfully set the transcript channel to {transcripts.mention}", color=0x00ff00))
+        # if more then 1 option is not None then send error
+        elif role is not None and category is not None and transcripts is not None:
+            await ctx.response.send_message(embed=error_embed("Error:x:", "You can only edit one setting at a time"))
+        else:
+            embed = Embed(title="Config", description=f"This command is used to edit the config of the bot.\n\n**Usage:**\n`{self.bot.command_prefix}edit-config [setting] [value]`\n\n**Settings:**\n`role` - The role that can start a modmail thread.\n`category` - The category that modmail threads will be created in.\n`transcripts` - The channel that transcripts will be sent to.\n\nNote you can use slash commands here", color=0x00ff00)
+            await ctx.response.send_message(embed=embed)
 
 
 async def setup(bot):
