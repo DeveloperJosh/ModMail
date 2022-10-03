@@ -15,6 +15,7 @@ class Database:
         self.users = self.db["users"]
         self.servers = self.db["servers"]
         self.commands = self.db["commands"]
+        self.opt_out = self.db["optout"]
 
     async def block(self, id):
         if await self.blocked.find_one({"_id": id}):
@@ -87,6 +88,25 @@ class Database:
     async def save_transcript(self, id, data):
         if await self.find_server(id):
             await self.servers.update_one({"_id": id}, {"$set": {"transcript": data}})
+            return True
+        return False
+
+    async def optout(self, id):
+        if await self.opt_out.find_one({"_id": id}):
+            return False
+        await self.opt_out.insert_one({"_id": id, "optout": True})
+        return True
+
+    async def find_opt(self, id):
+        # return the opt data
+        data = await self.opt_out.find_one({"_id": id})
+        if data:
+            return data
+        return False
+
+    async def optin(self, id):
+        if await self.opt_out.find_one({"_id": id}):
+            await self.opt_out.delete_one({"_id": id})
             return True
         return False
 

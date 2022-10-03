@@ -93,6 +93,8 @@ class Ticket():
     async def create_transcript(self, channel: discord.TextChannel, guild) -> None:
      """This function creates a transcript of the ticket"""
 
+     # TODO: Add the optout feature to the transcript
+
      # Making the file
      channel = self.bot.get_channel(channel.id)  # type: ignore
      text = ""

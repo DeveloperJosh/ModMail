@@ -275,9 +275,9 @@ class Modmail(commands.Cog):
     @commands.hybrid_command(help="Lets users opt out of the transcript system.")
     @commands.guild_only()
     async def optout(self, ctx):
-        if await self.db.find_user(ctx.author.id):
+        if await self.db.find_opt(ctx.author.id):
             return await ctx.send("You are already opted out.")
-        await self.db.add_user(ctx.author.id, {'optout': True})
+        await self.db.optout(ctx.author.id)
         embed = discord.Embed(title="Opt Out", description="You have opted out of the transcript system.", color=0x00ff00)
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)
@@ -285,9 +285,9 @@ class Modmail(commands.Cog):
     @commands.hybrid_command(help="Lets users opt back into the transcript system.")
     @commands.guild_only()
     async def optin(self, ctx):
-        if not await self.db.find_user(ctx.author.id):
-            return await ctx.send("You are not opted out.")
-        await self.db.delete_user(ctx.author.id)
+        if not await self.db.find_opt(ctx.author.id):
+            return await ctx.send("You are already opted in.")
+        await self.db.optin(ctx.author.id)
         embed = discord.Embed(title="Opt In", description="You have opted back into the transcript system.", color=0x00ff00)
         embed.set_footer(text="Modmail")
         await ctx.send(embed=embed)
