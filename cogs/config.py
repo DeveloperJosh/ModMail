@@ -174,6 +174,14 @@ class Config(commands.Cog):
             embed = Embed(title="Config", description=f"This command is used to edit the config of the bot.\n\n**Usage:**\n`{self.bot.command_prefix}edit-config [setting] [value]`\n\n**Settings:**\n`role` - The role that can start a modmail thread.\n`category` - The category that modmail threads will be created in.\n`transcripts` - The channel that transcripts will be sent to.\n\nNote you can use slash commands here", color=0x00ff00)
             await ctx.response.send_message(embed=embed)
 
+    @app_config.error
+    async def app_config_error(self, ctx: discord.Integration, error):
+        if isinstance(error, discord.app_commands.errors.MissingPermissions):
+            await ctx.response.send_message(embed=error_embed("Error:x:", "You do not have permission to use this command"))
+        elif isinstance(error, discord.app_commands.errors.CommandLimitReached):
+            await ctx.response.send_message(embed=error_embed("Error:x:", "You can only edit one setting at a time"))
+        else:
+            logging.error(error)
 
 async def setup(bot):
     await bot.add_cog(Config(bot))
