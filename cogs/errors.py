@@ -1,6 +1,7 @@
 import logging
 import sys
 import traceback
+from typing import Union
 import discord
 from discord.ext import commands
 from discord.ext.commands import MissingPermissions, CheckFailure, CommandNotFound, MissingRequiredArgument, BadArgument, MissingRole
@@ -17,7 +18,7 @@ class ErrorHandling(commands.Cog, name="on command error"):
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx: commands.Context, error):
+    async def on_command_error(self, ctx: Union[commands.Context, discord.Integration], error):
         if isinstance(error, commands.CommandOnCooldown):
             day = round(error.retry_after / 86400)
             hour = round(error.retry_after / 3600)
@@ -51,7 +52,6 @@ class ErrorHandling(commands.Cog, name="on command error"):
         elif isinstance(error, commands.NotOwner):
             embed = discord.Embed(title="Developer Only", description="You must be a developer to run this command")
             await ctx.send(embed=embed, delete_after=5)
-            await ctx.reply(embed=embed)
         elif isinstance(error, CheckFailure):
             return
         elif isinstance(error, BadArgument):
@@ -72,6 +72,12 @@ class ErrorHandling(commands.Cog, name="on command error"):
                 f"Unable to DM!",
                 f"I am unable to dm {error.user} because their DMs are disabled.\nPlease ask them to enable their DMs."
             ))
+        elif isinstance(error, discord.app_commands.errors.MissingPermissions):
+            embed = discord.Embed(title="ERROR!", description=f"{error}")
+            await ctx.response.send_message(embed=embed)
+        elif isinstance(error, discord.app_commands.errors.MissingRole):
+            embed = discord.Embed(title="ERROR!", description=f"{error}")
+            await ctx.response.send_message(embed=embed)
         else:
             logging.error(f"Error in command {ctx.command}: {error}")
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
