@@ -42,6 +42,8 @@ class Ticket():
             await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False) # type: ignore
             role = guild.get_role(guild_data['staff_role']) # type: ignore
             await channel.set_permissions(role, read_messages=True, send_messages=True) # type: ignore
+            # give bot perms in the channel
+            await channel.set_permissions(self.bot.user, read_messages=True, send_messages=True) # type: ignore
             try:
              await self.db.add_user(id, {"ticket": int(channel.id), "guild": int(guild_id), "name": data.name, "discriminator": data.discriminator, "avatar": str(data.avatar.url)}) # type: ignore
             except Exception as e:

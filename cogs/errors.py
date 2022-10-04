@@ -1,4 +1,5 @@
 import logging
+import sys
 import traceback
 import discord
 from discord.ext import commands
@@ -7,7 +8,7 @@ from utils.exceptions import (
     NotSetup, NotStaff, NotAdmin, ModRoleNotFound,
     TicketCategoryNotFound, TranscriptChannelNotFound,
     UserAlreadyInAModmailThread, DMsDisabled, NoBots,
-    GuildOnlyPls
+    GuildOnlyPls, TicketChannelNotFound
 )
 from utils.embed import error_embed
 
@@ -61,27 +62,19 @@ class ErrorHandling(commands.Cog, name="on command error"):
                 f"Not Found!",
                 "Uh oh! Looks like the ticket category was not found! Maybe the category was deleted.\nPlease use `?setup` to set a new one."
             ))
+        elif isinstance(error, TicketChannelNotFound):
+            await ctx.reply(embed=error_embed(
+                f"Not Found!",
+                "Uh oh! Looks like the ticket channel was not found! Maybe the channel was deleted.\nPlease use Join the support server to get help.\nhttps://discord.gg/MsPSSvKFfn"
+            ))
         elif isinstance(error, DMsDisabled):
             await ctx.reply(embed=error_embed(
                 f"Unable to DM!",
                 f"I am unable to dm {error.user} because their DMs are disabled.\nPlease ask them to enable their DMs."
             ))
         else:
-            error_text = f"```py {traceback.format_exc()} ```"
-            print(error_text)
-            try:
-                await ctx.reply(embed=error_embed(
-                    "An error has occured!",
-                    f"```py {error}```"
-                ))
-                logging.error(error)
-            except Exception as e:
-                logging.error(e)
-                await ctx.channel.send(f"An error occured: \n\n```{error}```")
-            try:
-                await self.bot.get_channel(889115230355996703).send(embed=error_embed("Unknown Error", f"```py\n{error_text}\n```"))
-            except Exception:
-                print("Unable to send error to error channel")
+            logging.error(f"Error in command {ctx.command}: {error}")
+            traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
 async def setup(bot):
     await bot.add_cog(ErrorHandling(bot=bot))
