@@ -3,6 +3,11 @@
 I'm making this bot to replace my modmail [MailHook](https://github.com/DeveloperJosh/MailHook)
 
 
+<a href="https://top.gg/bot/781639675868872796">
+  <img src="https://top.gg/api/widget/781639675868872796.svg">
+</a>
+
+
 ## Features
 
 - Dashboard
