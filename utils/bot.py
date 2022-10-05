@@ -4,6 +4,8 @@ from aiohttp import ClientSession
 import os
 from dotenv import load_dotenv
 import datetime
+from .db import Database
+db = Database()
 
 load_dotenv()
 
