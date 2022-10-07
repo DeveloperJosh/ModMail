@@ -1,8 +1,10 @@
+from turtle import title
 from unicodedata import name
 import discord
 from discord.ext import commands
 from utils.db import Database
 from utils.ticket_core import Ticket
+from discord import app_commands
 ## TODO: Clean the code, add more comments, and add more features, make it much more user friendly
 
 class Snippet(commands.Cog):

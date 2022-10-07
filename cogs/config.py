@@ -28,11 +28,16 @@ class Config(commands.Cog):
         # send the config settings
         embed = Embed(title="Config", description="Here are the current config settings for this server\n\nTo edit the config run `/edit-config [setting]`", color=0x00ff00)
         category = discord.utils.get(ctx.guild.categories, id=server_settings["category"])
-        embed.add_field(name="Category", value=category)
+        embed.add_field(name="Category", value=category, inline=True)
         transcripts = discord.utils.get(ctx.guild.text_channels, id=server_settings["transcript_channel"])
-        embed.add_field(name="Transcripts", value=transcripts)
+        embed.add_field(name="Transcripts", value=transcripts, inline=True)
         role = discord.utils.get(ctx.guild.roles, id=server_settings["staff_role"])
-        embed.add_field(name="Role", value=role)
+        embed.add_field(name="Role", value=role, inline=True)
+        embed.add_field(
+        name="‎",
+        value=f"[Github](https://github.com/DeveloperJosh/ModMail) | [Support Server](https://discord.gg/TeSHENet9M) | [Old Bot](https://github.com/DeveloperJosh/MailHook)",
+        inline=False
+    )
         await ctx.send(embed=embed)
 
     # app_commands
