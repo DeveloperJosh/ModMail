@@ -5,7 +5,7 @@ import discord
 from utils.db import Database
 from discord.ext import commands
 from utils.dropdown import ServersDropdown, ServersDropdownView, Confirm
-from utils.exceptions import DMsDisabled, TicketCategoryNotFound
+from utils.exceptions import DMsDisabled, TicketCategoryNotFound, TicketChannelNotFound
 from utils.embed import custom_embed, error_embed, success_embed
 from utils.ticket_core import Ticket
 
@@ -74,8 +74,15 @@ class Modmail(commands.Cog):
             else:
                try:
                 data = await self.db.find_user(message.author.id)
+                if not data:
+                    return
                 guild = self.bot.get_guild(data['guild']) # type: ignore
                 channel = guild.get_channel(data['ticket']) # type: ignore
+                if channel is None:
+                    await message.channel.send(embed=error_embed("Oh no!", "Your ticket channel was not found. Please contact a server admin.\nFor now, I will create a new ticket for you."))
+                    await self.db.delete_user(message.author.id)
+                    await self.ticket.create(message.author.id, guild.id, message)
+                    return
                 await self.ticket.send_mondmail_message(channel, message, "Modmail")
                 # add a reaction to the message
                 await message.add_reaction("✅")
@@ -192,16 +199,16 @@ class Modmail(commands.Cog):
         if reason is None:
          data = await self.db.find_ticket(ctx.channel.id)
          user = self.bot.get_user(int(data['_id'])) # type: ignore
-         await self.db.delete_user(user.id)
          embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed", color=0x00ff00)
          embed.set_footer(text="Modmail")
          await user.send(embed=embed)
-         await self.ticket.create_transcript(ctx.channel, ctx.guild)
+         await self.ticket.create_transcript(ctx.channel, ctx.guild, user.id)
+         await self.db.delete_user(user.id)
         else:
          data = await self.db.find_ticket(ctx.channel.id)
          user = self.bot.get_user(int(data['_id'])) # type: ignore
+         await self.ticket.create_transcript(ctx.channel, ctx.guild, user.id)
          await self.db.delete_user(user.id)
-         await self.ticket.create_transcript(ctx.channel, ctx.guild)
          embed = discord.Embed(title="Ticket Closed", description=f"Your ticket has been closed\nReason: {reason}", color=0x00ff00)
          embed.set_footer(text="Modmail")
          await user.send(embed=embed)

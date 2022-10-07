@@ -40,14 +40,14 @@ class ServersDropdownView(discord.ui.View):
         self.yes = False
 
     @discord.ui.button(label="Continue", style=discord.ButtonStyle.blurple, row=1)
-    async def c(self, b, i):
+    async def c(self, i: discord.Interaction, b: discord.ui.Button):
         if not self.children[2].values:  # type: ignore
             return await i.response.send_message("Please select a server first.", ephemeral=True)
         self.yes = True
         self.stop()
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger, row=1)
-    async def c_(self, b, i):
+    async def c_(self, i: discord.Interaction, b: discord.ui.Button):
         self.stop()
 
 class RolesDropdown(discord.ui.Select):
@@ -67,7 +67,7 @@ class RolesDropdownView(discord.ui.View):
         self.yes = False
 
     @discord.ui.button(label="Continue", style=discord.ButtonStyle.blurple, row=1)
-    async def c(self, b, i):
+    async def c(self, i: discord.Interaction, b: discord.ui.Button):
         if not self.children[2].values:  # type: ignore
             return await i.response.send_message("Please select a server first.", ephemeral=True)
         self.yes = True
@@ -94,9 +94,9 @@ class ChannelsDropdownView(discord.ui.View):
         self.yes = False
 
     @discord.ui.button(label="Continue", style=discord.ButtonStyle.blurple, row=1)
-    async def c(self, b, i):
+    async def c(self, i: discord.Interaction, b: discord.ui.Button):
         if not self.children[2].values:  # type: ignore
-            return await i.response.send_message("Please select a server first.", ephemeral=True)
+            return await i.response.send_message("Please select a channel first.", ephemeral=True)
         self.yes = True
         self.stop()
 
@@ -121,9 +121,9 @@ class CategoryDropdownView(discord.ui.View):
         self.yes = False
 
     @discord.ui.button(label="Continue", style=discord.ButtonStyle.blurple, row=1)
-    async def c(self, b, i):
+    async def c(self, i: discord.Interaction, b: discord.ui.Button):
         if not self.children[2].values:  # type: ignore
-            return await i.response.send_message("Please select a server first.", ephemeral=True)
+            return await i.response.send_message("Please select a category first.", ephemeral=True)
         self.yes = True
         self.stop()
 

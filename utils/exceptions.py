@@ -18,10 +18,11 @@ class ModRoleNotFound(CommandError):
 class TicketCategoryNotFound(CommandError):
     pass
 
+class TicketChannelNotFound(CommandError):
+    pass
 
 class TranscriptChannelNotFound(CommandError):
     pass
-
 
 class UserAlreadyInAModmailThread(CommandError):
     def __init__(self, user: Optional[Union[discord.Member, discord.User]]):
