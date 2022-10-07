@@ -1,5 +1,3 @@
-from turtle import title
-from unicodedata import name
 import discord
 from discord.ext import commands
 from utils.db import Database
