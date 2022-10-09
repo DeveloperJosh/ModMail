@@ -172,30 +172,15 @@ class Database:
         await self.commands.insert_one(things)
         return True
 
-    async def update_command(self, id, command, data):
+    async def update_command(self, id, command, content):
         if await self.find_command(id, command):
-            await self.commands.update_one({"guild": id, "command": command}, {"$set": data})
+            #await self.commands.update_one({"guild": id, "command": command}, {"$set": data})
+            await self.commands.update_one({"guild": id, "command": command}, {"$set": {"text": content}})
             return True
         return False
 
     async def delete_command(self, id, command):
         if await self.find_command(id, command):
             await self.commands.delete_one({"guild": id, "command": command})
-            return True
-        return False
-
-    ################################################
-
-    async def find_prefix(self, id):
-        # return the prefix data
-        data = await self.servers.find_one({"_id": id})
-        try:
-            return data["prefix"]
-        except:
-            return False
-
-    async def update_prefix(self, id, prefix):
-        if await self.servers.find_one({"_id": id}):
-            await self.servers.update_one({"_id": id}, {"$set": {"prefix": prefix}})
             return True
         return False

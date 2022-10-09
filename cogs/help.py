@@ -12,9 +12,14 @@ async def get_bot_help(bot: ModMail) -> discord.Embed:
         if len(cog.get_commands()) > 0 and cog.qualified_name not in ["Jishaku", "Help", "Developer"]:
             embed.add_field(
                 name=cog.qualified_name,
-                value='\n'.join(['`' + command.qualified_name + f'` - {command.help}' for command in cog.get_commands()]),
+                value='\n'.join(['`' + command.qualified_name + f'` - {command.help}' for command in cog.get_commands()] + ['`/' + command.qualified_name + f'` - {command.description}' for command in cog.walk_app_commands()]),
                 inline=False
             )
+    embed.add_field(
+        name="**Snippets**",
+        value="`/snippets add <name> <content>` - Add a snippet\n`/snippets remove <name>` - Remove a snippet\n`/snippets edit <name> <content>` - Edit the text of a snippet\n`/snippets list` - List all snippets",
+        inline=False
+    )
     return embed.add_field(
         name="‎",
         value=f"[Github](https://github.com/DeveloperJosh/ModMail) | [Support Server](https://discord.gg/TeSHENet9M) | [Old Bot](https://github.com/DeveloperJosh/MailHook)",

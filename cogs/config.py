@@ -51,8 +51,11 @@ class Config(commands.Cog):
                 return
             if not await self.db.find_server(ctx.guild.id):
                await ctx.response.send_message(embed=error_embed("Error:x:", "You need to run `/setup` first"))
-            await self.db.update_server(ctx.guild.id, {"role": role.id})
-            await ctx.response.send_message(embed=Embed(title="Config", description=f"Successfully set the role to {role.mention}", color=0x00ff00))
+            try:
+             await self.db.update_server(ctx.guild.id, {"staff_role": role.id})
+             await ctx.response.send_message(embed=Embed(title="Config", description=f"Successfully set the role to {role.mention}", color=0x00ff00))
+            except Exception as e:
+                await ctx.response.send_message(embed=error_embed("Error:x:", f"An error occurred: {e}"))
         elif category is not None:
             if not ctx.guild.me.guild_permissions.manage_channels:
                 await ctx.response.send_message(embed=error_embed("Error:x:", "I do not have permission to manage channels"))
@@ -79,9 +82,9 @@ class Config(commands.Cog):
     @app_config.error  # type: ignore
     async def app_config_error(self, ctx: discord.Integration, error):
         if isinstance(error, discord.app_commands.errors.MissingPermissions):
-            await ctx.response.send_message(embed=error_embed("Error:x:", "You do not have permission to use this command"))
+            await ctx.response.send_message(embed=error_embed("Error:x:", "You do not have permission to use this command")) # type: ignore
         elif isinstance(error, discord.app_commands.errors.CommandLimitReached):
-            await ctx.response.send_message(embed=error_embed("Error:x:", "You can only edit one setting at a time"))
+            await ctx.response.send_message(embed=error_embed("Error:x:", "You can only edit one setting at a time")) # type: ignore
         else:
             logging.error(error)
 

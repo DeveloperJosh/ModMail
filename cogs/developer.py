@@ -1,7 +1,7 @@
 from typing import Dict
 import discord
 from utils.db import Database
-from discord.ext import commands
+from discord.ext import commands, tasks
 from utils.embed import custom_embed, error_embed, success_embed, image_embed
 
 class Developer(commands.Cog):
@@ -37,7 +37,7 @@ If you face any issues, feel free to join our support server:
             title="New guild joined",
             description=f"{guild.name} ({guild.id})",
             color=discord.Color.blurple()
-        ).set_author(name=f"{guild.owner}", icon_url=guild.owner.display_avatar.url
+        ).set_author(name=f"{guild.owner}", icon_url=guild.owner.display_avatar.url # type: ignore
         ).add_field(name="Humans:", value=f"{len(list(filter(lambda m: not m.bot, guild.members)))}"
         ).add_field(name="Bots:", value=f"{len(list(filter(lambda m: m.bot, guild.members)))}"
         ).set_footer(text=f"Owner ID: {guild.owner_id}")
@@ -49,20 +49,20 @@ If you face any issues, feel free to join our support server:
         for channel in guild.channels:
             if "general" in channel.name:
                 try:
-                    return await channel.send(text_to_send)
+                    return await channel.send(text_to_send)  # type: ignore
                 except Exception:
                     pass
 
         for channel in guild.channels:
             if "bot" in channel.name or "cmd" in channel.name or "command" in channel.name:
                 try:
-                    return await channel.send(text_to_send)
+                    return await channel.send(text_to_send)  # type: ignore
                 except Exception:
                     pass
 
         for channel in guild.channels:
             try:
-                return await channel.send(text_to_send)
+                return await channel.send(text_to_send)  # type: ignore
             except Exception:
                 pass
 
@@ -72,7 +72,7 @@ If you face any issues, feel free to join our support server:
             title="Guild left",
             description=f"{guild.name} ({guild.id})",
             color=discord.Color.red()
-        ).set_author(name=f"{guild.owner}", icon_url=guild.owner.display_avatar.url
+        ).set_author(name=f"{guild.owner}", icon_url=guild.owner.display_avatar.url # type: ignore
         ).add_field(name="Humans:", value=f"{len(list(filter(lambda m: not m.bot, guild.members)))}"
         ).add_field(name="Bots:", value=f"{len(list(filter(lambda m: m.bot, guild.members)))}"
         ).set_footer(text=f"Owner ID: {guild.owner_id}")
