@@ -1,5 +1,3 @@
-from turtle import title
-from unicodedata import name
 import discord
 from discord.ext import commands
 from utils.db import Database
@@ -12,69 +10,69 @@ class Snippet(commands.Cog):
         self.bot = bot
         self.db = Database()
         self.ticket = Ticket(bot)
+    snippet = app_commands.Group(name="snippet", description="Use this command to add snippets, Use snippets, and delete snippets")
 
-    @commands.hybrid_command(aliases=['s'], help="Use this command to add snippets, Use snippets, and delete snippets")
-    async def snippet(self, ctx, *, option=None):
-        if option is None:
-            #embed = discord.Embed(title="Config", description=f"This command is used to edit the config of the bot.\n\n**Usage:**\n`{self.bot.command_prefix}edit-config [setting] [value]`\n\n**Settings:**\n`role` - The role that can start a modmail thread.\n`category` - The category that modmail threads will be created in.\n`transcripts` - The channel that transcripts will be sent to.\n\nNote you can use slash commands here", color=0x00ff00)
-            embed = discord.Embed(title="Snippet", description=f"This command is used to add, use, and delete snippets.\n\n**Usage:**\n`{self.bot.command_prefix}snippet [option] [name] [content]`\n\n**Options:**\n`add` - Add a snippet.\n`use` - Use a snippet.\n`delete` - Delete a snippet.\nTo use a snippet just do this `snippet [name of snippet]`.\n\nNote you can use slash commands here", color=0x00ff00)
-            await ctx.send(embed=embed)
+    @snippet.command(name="add", description="Add a snippet")
+    @app_commands.checks.has_permissions(manage_guild=True)
+    @app_commands.guild_only()
+    async def snippet_2_add(self, ctx, name: str, content: str, is_embed: bool):
+         if await self.ticket.check(ctx.channel.id) is True:
+            return await ctx.response.send_message(embed=discord.Embed(title="Error:x:", description="You can not use this command in a ticket channel", color=0x00ff00), ephemeral=True)
 
-        elif option.startswith("add"):
-            # start asking for name and content and if it is a embed or not
-            # check if channel is a ticket channel
-            if await self.ticket.check(ctx.channel.id) is True:
-                return await ctx.send(embed=discord.Embed(title="Error:x:", description="You can not use this command in a ticket channel", color=0x00ff00))
+         if await self.db.max_commands(ctx.guild.id) is True:
+            embed=discord.Embed(title="Error:x:", description="You have reached the maximum amount of commands you can have", color=0x00ff00)
+            embed.add_field(name="How to get more", value="You can vote for the bot on top.gg and get 5 more commands (This is coming soon)")
+            return await ctx.response.send_message(embed=embed)
 
-            if await self.db.max_commands(ctx.guild.id) is True:
-                embed=discord.Embed(title="Error:x:", description="You have reached the maximum amount of commands you can have", color=0x00ff00)
-                embed.add_field(name="How to get more", value="You can vote for the bot on top.gg and get 5 more commands (This is coming soon)")
-                return await ctx.send(embed=embed)
+         stuff = {}
+         stuff["embed"] = is_embed
+         stuff['command'] = name
+         stuff['text'] = content
+         await self.db.create_command(ctx.guild.id, stuff)
+         embed=discord.Embed(title="Success:heavy_check_mark:", description=f"You have successfully added a snippet\n\n`Snippet name`: {name}\n`Snippet content`: {content}\n`Is_embed` {is_embed}", color=0x00ff00)
+         await ctx.response.send_message(embed=embed)
 
-            stuff = {}
-            def check(m):
-             return m.content and m.channel
-            await ctx.send("Is this a embed? (yes/no)")
-            msg = await self.bot.wait_for('message', check=check)
-            # lower or upper case
-            if msg.content.lower() == "yes" or msg.content == "Yes":
-                stuff["embed"] = True
-            elif msg.content == "no" or msg.content == "No":
-                stuff['embed'] = False
-            else:
-                return await ctx.send("Unknown response")
-            await ctx.send("What is the name?")
-            msg = await self.bot.wait_for('message', check=check)
-            stuff['command'] = msg.content
-            await ctx.send("What is the content?")
-            msg = await self.bot.wait_for('message', check=check)
-            stuff['text'] = msg.content
-            await self.db.create_command(ctx.guild.id, stuff)
-            await ctx.send("Snippet created")
+    @snippet.command(name="remove", description="Remove a snippet")
+    @app_commands.checks.has_permissions(manage_guild=True)
+    @app_commands.guild_only()
+    async def snippet_2_remove(self, ctx, name: str):
+        try:
+         await self.db.delete_command(ctx.guild.id, name)
+         await ctx.response.send_message("Snippet deleted")
+        except Exception as e:
+            await ctx.response.send_message("It seems like that is not a command or something went wrong", ephemeral=True)
+            print(e)
 
-        elif option.startswith("remove"):
-            name = option[7:]
-            await self.db.delete_command(ctx.guild.id, name)
-            await ctx.send("Snippet deleted")
-
-        elif option.startswith("list"):
+    @snippet.command(name="list", description="Show all the snippets")
+    @app_commands.checks.has_permissions(manage_guild=True)
+    @app_commands.guild_only()
+    async def snippet_2_list(self, ctx):
             commands = await self.db.find_commands(ctx.guild.id)
+            if commands is None:
+                return await ctx.response.send_message("There are no snippets", ephemeral=True)
+            if len(commands) == 0:
+                return await ctx.response.send_message("There are no snippets", ephemeral=True)
+            if not commands:
+                return await ctx.response.send_message("There are no snippets", ephemeral=True)
             embed = discord.Embed(title="Snippets", description=f"Here are the snippets", color=0x00ff00)
             for command in commands:
                 embed.add_field(name=command['command'], value=command['text'], inline=False)
             embed.set_footer(text="Modmail")
-            await ctx.send(embed=embed)
-        else:
-            # check if it is a command
-            command = await self.db.find_command(ctx.guild.id, option)
+            await ctx.response.send_message(embed=embed)
+
+    @snippet.command(name="use", description="Use a snippet, The snippet will be sent to a ticket user")
+    @app_commands.checks.has_permissions(manage_messages=True)
+    @app_commands.guild_only()
+    async def snippet_2_send(self, ctx, name: str):
             data = await self.db.find_ticket(ctx.channel.id)
             if not data:
-                    return await ctx.send("This is not a ticket")
+                    return await ctx.response.send_message("This is not a ticket", ephemeral=True)
             try:
                 user = await self.bot.fetch_user(data['_id'])  # type: ignore
             except:
                 return
             #print(command)
+            command = await self.db.find_command(ctx.guild.id, name)
             if command:
                 if command['embed'] == True:
                     embed = discord.Embed(title=command['command'], description=command['text'], color=0x00ff00)
@@ -82,15 +80,31 @@ class Snippet(commands.Cog):
                     await user.send(embed=embed)
                     # now send the webhook
                     webhook = await ctx.channel.webhooks()  # type: ignore
-                    await webhook[0].send(command["text"], username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
+                    await webhook[0].send(command["text"], username="Snippet Used", avatar_url=self.bot.user.avatar.url) # type: ignore
+                    await ctx.response.send_message("Snippet sent", ephemeral=True)
                 else:
-                    txt = f"**{ctx.author.name}** in **{ctx.guild.name}**:\n{command['text']}"
+                    txt = f"From **{ctx.guild.name}**:\n{command['text']}"
                     await user.send(txt)
-                    webhook = await ctx.channel.webhooks()  # type: ignore
-                    await webhook[0].send(command["text"], username=ctx.author.name, avatar_url=ctx.author.avatar.url) # type: ignore
+                    webhook = await ctx.channel.webhooks()
+                    await webhook[0].send(command["text"], username="Snippet Used", avatar_url=self.bot.user.avatar.url) # type: ignore
+                    await ctx.response.send_message("Snippet sent", ephemeral=True)
             else:
-                await ctx.send("That is not a command")
-            
+                await ctx.response.send_message("That is not a command", ephemeral=True)
+
+    @snippet.command(name="edit", description="Edit the text of a snippet")
+    @app_commands.checks.has_permissions(manage_guild=True)
+    @app_commands.guild_only()
+    async def snippet_2_edit(self, ctx, name: str, content: str):
+     try:
+        found = await self.db.find_command(ctx.guild.id, name)
+        if found:
+         await self.db.update_command(ctx.guild.id, name, content)
+         await ctx.response.send_message("Snippet edited")
+        else:
+            await ctx.response.send_message("That is not a command", ephemeral=True)
+     except Exception as e:
+        await ctx.response.send_message("It seems like that is not a command or something went wrong")
+        print(e)
 
 async def setup(bot):
     await bot.add_cog(Snippet(bot))

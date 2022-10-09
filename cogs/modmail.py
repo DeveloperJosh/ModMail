@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import time
 from typing import Dict
@@ -10,6 +11,7 @@ from utils.embed import custom_embed, error_embed, success_embed
 from utils.ticket_core import Ticket
 
 dropdown_concurrency = []
+spamming = []
 
 class Modmail(commands.Cog):
     def __init__(self, bot):

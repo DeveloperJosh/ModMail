@@ -172,9 +172,10 @@ class Database:
         await self.commands.insert_one(things)
         return True
 
-    async def update_command(self, id, command, data):
+    async def update_command(self, id, command, content):
         if await self.find_command(id, command):
-            await self.commands.update_one({"guild": id, "command": command}, {"$set": data})
+            #await self.commands.update_one({"guild": id, "command": command}, {"$set": data})
+            await self.commands.update_one({"guild": id, "command": command}, {"$set": {"text": content}})
             return True
         return False
 
