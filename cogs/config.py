@@ -79,9 +79,9 @@ class Config(commands.Cog):
     @app_config.error  # type: ignore
     async def app_config_error(self, ctx: discord.Integration, error):
         if isinstance(error, discord.app_commands.errors.MissingPermissions):
-            await ctx.response.send_message(embed=error_embed("Error:x:", "You do not have permission to use this command"))
+            await ctx.response.send_message(embed=error_embed("Error:x:", "You do not have permission to use this command")) # type: ignore
         elif isinstance(error, discord.app_commands.errors.CommandLimitReached):
-            await ctx.response.send_message(embed=error_embed("Error:x:", "You can only edit one setting at a time"))
+            await ctx.response.send_message(embed=error_embed("Error:x:", "You can only edit one setting at a time")) # type: ignore
         else:
             logging.error(error)
 

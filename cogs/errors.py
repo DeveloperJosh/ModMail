@@ -72,6 +72,11 @@ class ErrorHandling(commands.Cog, name="on command error"):
                 f"Unable to DM!",
                 f"I am unable to dm {error.user} because their DMs are disabled.\nPlease ask them to enable their DMs."
             ))
+        elif isinstance(error, NoBots):
+            await ctx.reply(embed=error_embed(
+                "Bots are not allowed!",
+                "Bots are not allowed to create tickets."
+            ))
         else:
             logging.error(f"Error in command {ctx.command}: {error}")
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
