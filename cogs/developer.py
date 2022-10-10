@@ -26,8 +26,6 @@ class Developer(commands.Cog):
     @commands.Cog.listener()
     async def on_dbl_vote(self, data): 
      if data["type"] == "test":
-        # this is roughly equivalent to
-        # `return await on_dbl_test(data)` in this case
         return self.bot.dispatch("dbl_test", data)
      embed = discord.Embed(title="Vote", description=f"Thanks for voting for the bot! You can vote every 12 hours\n\n", color=0xff00c8)
      embed.set_thumbnail(url=self.bot.user.avatar.url)
@@ -43,7 +41,7 @@ class Developer(commands.Cog):
          await self.bot.get_user(int(data["user"])).send(embed=embed)
         except:
             pass
-        
+
     @commands.Cog.listener('on_command')
     async def cmd_logs(self, ctx):
         if not ctx.guild:
