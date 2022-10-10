@@ -41,7 +41,6 @@ class Ticket():
              channel = await guild.create_text_channel(name=f"ticket-{message.author.id}", category=guild.get_channel(guild_data['category'])) # type: ignore
              await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False) # type: ignore
              role = guild.get_role(guild_data['staff_role']) # type: ignore
-             print(role.id)
              await channel.set_permissions(role, read_messages=True, send_messages=True) # type: ignore
             # give bot perms in the channel
              await channel.set_permissions(self.bot.user, read_messages=True, send_messages=True) # type: ignore
@@ -110,6 +109,7 @@ class Ticket():
         return
       await transcript_db_channel.send("Sorry, But the Owner of this ticket has opted out of the transcript system, So no transcript was made.")  # type: ignore
       await channel.delete()
+      return
 
      # Making the file
      channel = self.bot.get_channel(channel.id)  # type: ignore
