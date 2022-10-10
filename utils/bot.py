@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 import datetime
 from .db import Database
+import topgg
 db = Database()
 
 load_dotenv()
@@ -12,7 +13,7 @@ load_dotenv()
 from typing import Dict, List, Optional
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 class ModMail(commands.Bot):
     def __init__(
@@ -38,11 +39,8 @@ class ModMail(commands.Bot):
         # if debug is enabled, then don't sync slash commands
         if not self.debug:
             print("Syncing slash commands...")
-            try:
-             await self.tree.sync()
-             print("Slash commands synced!")
-            except Exception as e:
-                logging.error(f"Failed to sync slash commands: {e}")
+            await self.tree.sync()
+            print("Slash commands synced!")
         else:
             pass
 

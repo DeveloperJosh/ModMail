@@ -2,12 +2,26 @@ from typing import Dict
 import discord
 from utils.db import Database
 from discord.ext import commands, tasks
+import topgg
+import os
+from dotenv import load_dotenv
+load_dotenv()
 from utils.embed import custom_embed, error_embed, success_embed, image_embed
 
 class Developer(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.db = Database()
+        dbl_token = os.getenv("TOP_GG")
+        self.topggpy = topgg.DBLClient(bot, dbl_token)
+
+    @tasks.loop(minutes=30)
+    async def update_stats(self):
+     try:
+        await self.topggpy.post_guild_count()
+        print(f"Posted server count ({self.topggpy.guild_count})")
+     except Exception as e:
+        print(f"Failed to post server count\n{e.__class__.__name__}: {e}")
 
     @commands.Cog.listener('on_command')
     async def cmd_logs(self, ctx):
@@ -164,6 +178,13 @@ If you face any issues, feel free to join our support server:
         else:
          embed = discord.Embed(title='Debug', description=f'Invalid mode', color=0xff00c8)
          await ctx.send(embed=embed)
+
+    @commands.command()
+    @commands.is_owner()
+    async def start(self, ctx):
+        self.update_stats.start()
+        embed = discord.Embed(title='Start', description=f'Started', color=0xff00c8)
+        await ctx.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Developer(bot))
