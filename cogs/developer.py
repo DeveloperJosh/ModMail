@@ -23,6 +23,18 @@ class Developer(commands.Cog):
      except Exception as e:
         print(f"Failed to post server count\n{e.__class__.__name__}: {e}")
 
+    @commands.Cog.listener()
+    async def on_dbl_vote(self, data): 
+     if data["type"] == "test":
+        # this is roughly equivalent to
+        # `return await on_dbl_test(data)` in this case
+        return self.bot.dispatch("dbl_test", data)
+     print(f"Received a vote:\n{data}")
+
+    @commands.Cog.listener()
+    async def on_dbl_test(self, data):
+        print(f"Received a test vote:\n{data}")
+
     @commands.Cog.listener('on_command')
     async def cmd_logs(self, ctx):
         if not ctx.guild:
@@ -183,6 +195,8 @@ If you face any issues, feel free to join our support server:
     @commands.is_owner()
     async def start(self, ctx):
         self.update_stats.start()
+        self.bot.topgg_webhook = topgg.WebhookManager(self.bot).dbl_webhook("/dblwebhook", "password")
+        self.bot.topgg_webhook.run(5000)  # this method can be awaited as well
         embed = discord.Embed(title='Start', description=f'Started', color=0xff00c8)
         await ctx.send(embed=embed)
 
