@@ -29,7 +29,10 @@ class Developer(commands.Cog):
         # this is roughly equivalent to
         # `return await on_dbl_test(data)` in this case
         return self.bot.dispatch("dbl_test", data)
-     print(f"Received a vote:\n{data}")
+     embed = discord.Embed(title="Vote", description=f"Thanks for voting for the bot! You can vote every 12 hours\n\n", color=0xff00c8)
+     embed.set_thumbnail(url=self.bot.user.avatar.url)
+     await self.bot.get_user(data["user"]).send(embed=embed)
+
 
     @commands.Cog.listener()
     async def on_dbl_test(self, data):
@@ -195,7 +198,8 @@ If you face any issues, feel free to join our support server:
     @commands.is_owner()
     async def start(self, ctx):
         self.update_stats.start()
-        self.bot.topgg_webhook = topgg.WebhookManager(self.bot).dbl_webhook("/dblwebhook", "password")
+        password = os.getenv("TOP_PASSWORD")
+        self.bot.topgg_webhook = topgg.WebhookManager(self.bot).dbl_webhook("/webhook", f"{password}")
         self.bot.topgg_webhook.run(5000)  # this method can be awaited as well
         embed = discord.Embed(title='Start', description=f'Started', color=0xff00c8)
         await ctx.send(embed=embed)

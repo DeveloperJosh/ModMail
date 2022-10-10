@@ -93,7 +93,6 @@ async def main():
     intents.webhooks = True
     ext = ['modmail', 'errors', 'developer', 'config', 'snippet', 'help', 'info']
     async with ClientSession() as server_client:
-     async with ModMail(command_prefix="?", allowed_mentions=discord.AllowedMentions(everyone=False, roles=True, users=True, replied_user=True),  activity=discord.Game("DM for support"), owner_ids=[542798185857286144, 321750582912221184], help_command=None, client=server_client, debug=False, intents=intents, testing_guild_id=884470177176109056, initial_cogs=ext) as bot:
+     async with ModMail(debug=False, command_prefix="?", allowed_mentions=discord.AllowedMentions(everyone=False, roles=True, users=True, replied_user=True),  activity=discord.Game("DM for support"), owner_ids=[542798185857286144, 321750582912221184], help_command=None, client=server_client, intents=intents, testing_guild_id=884470177176109056, initial_cogs=ext) as bot:
       token = os.getenv("DISCORD_TOKEN")
-      test_token = os.getenv("TEST_TOKEN")
       await bot.start(f"{token}", reconnect=True)
