@@ -159,7 +159,7 @@ class Modmail(commands.Cog):
         except:
              return await ctx.send("This user is not in the database.")
         try:
-         await ctx.send("Reply sent.", delete_after=5)
+         await ctx.send("Reply sent.", delete_after=5, ephemeral=True)
          await user.send(f"**{ctx.author.name}** in **{ctx.guild.name}**:\n{message}")
          #await ctx.message.delete()
         except Exception as e:
@@ -180,7 +180,7 @@ class Modmail(commands.Cog):
         except:
              return await ctx.send("This user is not in the database.")
         try:
-         await ctx.send("Reply sent.", delete_after=5)
+         await ctx.send("Reply sent.", delete_after=5, ephemeral=True)
          await user.send(f"**Anonymous** in **{ctx.guild.name}**:\n{message}")
         except Exception as e:
             logging.error(e)

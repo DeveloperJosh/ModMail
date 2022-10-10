@@ -7,7 +7,7 @@ async def get_bot_help(bot: ModMail) -> discord.Embed:
     embed = discord.Embed(
         description="Here are all my commands:",
         color=0x00ff00
-    ).set_author(icon_url=bot.user.display_avatar.url, name=f"{bot.user.name} Help")
+    ).set_author(icon_url=bot.user.display_avatar.url, name=f"{bot.user.name}'s Help")
     for cog_name, cog in bot.cogs.items():
         if len(cog.get_commands()) > 0 and cog.qualified_name not in ["Jishaku", "Help", "Developer"]:
             embed.add_field(
@@ -25,7 +25,6 @@ async def get_bot_help(bot: ModMail) -> discord.Embed:
         value=f"[Github](https://github.com/DeveloperJosh/ModMail) | [Support Server](https://discord.gg/TeSHENet9M) | [Old Bot](https://github.com/DeveloperJosh/MailHook)",
         inline=False
     ).set_thumbnail(url=bot.user.display_avatar.url)
-
 
 async def get_cog_help(bot: ModMail, cog: commands.Cog) -> discord.Embed:
     return discord.Embed(

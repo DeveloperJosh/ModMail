@@ -79,7 +79,10 @@ class ErrorHandling(commands.Cog, name="on command error"):
             ))
         else:
             logging.error(f"Error in command {ctx.command}: {error}")
-            traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+            e = traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+            embed = discord.Embed(title="Unknown Error!", description=f"```{e}```", color=discord.Color.red())
+            channel = self.bot.get_channel(889115230355996703)
+            await channel.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(ErrorHandling(bot=bot))
