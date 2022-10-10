@@ -31,13 +31,19 @@ class Developer(commands.Cog):
         return self.bot.dispatch("dbl_test", data)
      embed = discord.Embed(title="Vote", description=f"Thanks for voting for the bot! You can vote every 12 hours\n\n", color=0xff00c8)
      embed.set_thumbnail(url=self.bot.user.avatar.url)
-     await self.bot.get_user(data["user"]).send(embed=embed)
+     await self.bot.get_user(int(data["user"])).send(embed=embed)
 
 
     @commands.Cog.listener()
     async def on_dbl_test(self, data):
-        print(f"Received a test vote:\n{data}")
-
+        print(f"Received test vote from {data}")
+        try:
+         embed = discord.Embed(title="Vote", description=f"Thanks for voting for the bot! You can vote every 12 hours\n\n", color=0xff00c8)
+         embed.set_thumbnail(url=self.bot.user.avatar.url)
+         await self.bot.get_user(int(data["user"])).send(embed=embed)
+        except:
+            pass
+        
     @commands.Cog.listener('on_command')
     async def cmd_logs(self, ctx):
         if not ctx.guild:
