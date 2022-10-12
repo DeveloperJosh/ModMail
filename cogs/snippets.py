@@ -5,7 +5,7 @@ from utils.ticket_core import Ticket
 from discord import app_commands
 ## TODO: Clean the code, add more comments, and add more features, make it much more user friendly
 
-class Snippet(commands.Cog):
+class Snippets(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.db = Database()
@@ -107,4 +107,4 @@ class Snippet(commands.Cog):
         print(e)
 
 async def setup(bot):
-    await bot.add_cog(Snippet(bot))
+    await bot.add_cog(Snippets(bot))

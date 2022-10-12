@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import time
-from typing import Dict
+from typing import Dict, Optional
 import discord
 from utils.db import Database
 from discord.ext import commands
@@ -76,6 +76,16 @@ class Modmail(commands.Cog):
             else:
                try:
                 data = await self.db.find_user(message.author.id)
+                server = await self.db.find_server(data["guild"])
+                if not server:
+                    embed = discord.Embed(
+                        title="Oh no!",
+                        description=f"It looks like the server you are trying to contact is not in the database. Please contact a server admin.\n\n***For now we will delete your ticket.**",
+                        color=discord.Color.red()
+                    )
+                    await self.db.delete_user(message.author.id)
+                    await message.author.send(embed=embed)
+                    return
                 if not data:
                     return
                 guild = self.bot.get_guild(data['guild']) # type: ignore
@@ -150,7 +160,7 @@ class Modmail(commands.Cog):
     @commands.hybrid_command(aliases=["r"], help="Reply to a ticket.")
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
-    async def reply(self, ctx, *, message):
+    async def reply(self, ctx, *, message, image):
         data = await self.db.find_ticket(ctx.channel.id)
         if data is None:
             return await ctx.send("This is not a ticket channel.", ephemeral=True)
@@ -160,7 +170,7 @@ class Modmail(commands.Cog):
              return await ctx.send("This user is not in the database.")
         try:
          await ctx.send("Reply sent.", delete_after=5, ephemeral=True)
-         await user.send(f"**{ctx.author.name}** in **{ctx.guild.name}**:\n{message}")
+         await user.send(f"**{ctx.author.name}** in **{ctx.guild.name}**:\n{message}", file=image)
          #await ctx.message.delete()
         except Exception as e:
             print(e)

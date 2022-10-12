@@ -22,18 +22,18 @@ async def get_bot_help(bot: ModMail) -> discord.Embed:
     )
     return embed.add_field(
         name="‎",
-        value=f"[Github](https://github.com/DeveloperJosh/ModMail) | [Support Server](https://discord.gg/TeSHENet9M) | [Old Bot](https://github.com/DeveloperJosh/MailHook)",
+        value=f"[Github](https://github.com/DeveloperJosh/ModMail) | [Support Server](https://discord.gg/TeSHENet9M) | [Vote here](https://top.gg/bot/781639675868872796/vote)",
         inline=False
     ).set_thumbnail(url=bot.user.display_avatar.url)
 
 async def get_cog_help(bot: ModMail, cog: commands.Cog) -> discord.Embed:
     return discord.Embed(
         title=f"{cog.qualified_name} Help",
-        description='\n'.join([f"`{bot.command_prefix}{c.qualified_name}{' ' + c.signature if c.signature else ''}` - {c.help}" for c in cog.get_commands()]),
+        description='\n'.join([f"`{bot.command_prefix}{c.qualified_name}{' ' + c.signature if c.signature else ''}` - {c.help}" for c in cog.get_commands()] + [f"`/{c.qualified_name}` - {c.description}" for c in cog.walk_app_commands()]),
         color=0x00ff00
     ).add_field(
         name="‎",
-        value=f"[Github](https://github.com/DeveloperJosh/ModMail) | [Support Server](https://discord.gg/TeSHENet9M) | [Old Bot](https://github.com/DeveloperJosh/MailHook)",
+        value=f"[Github](https://github.com/DeveloperJosh/ModMail) | [Support Server](https://discord.gg/TeSHENet9M) | [Vote here](https://top.gg/bot/781639675868872796/vote)",
         inline=False
     )
 
@@ -45,7 +45,7 @@ async def get_command_help(bot, c: commands.Command) -> discord.Embed:
         color=0x00ff00
     ).add_field(name="Usage:", value=f"```{bot.command_prefix}{c.qualified_name}{' ' + c.signature if c.signature else ''}```").add_field(
         name="‎",
-        value=f"[Github](https://github.com/DeveloperJosh/ModMail) | [Support Server](https://discord.gg/TeSHENet9M) | [Old Bot](https://github.com/DeveloperJosh/MailHook)",
+        value=f"[Github](https://github.com/DeveloperJosh/ModMail) | [Support Server](https://discord.gg/TeSHENet9M) | [Vote here](https://top.gg/bot/781639675868872796/vote)",
         inline=False
     )
 

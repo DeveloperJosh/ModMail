@@ -1,13 +1,15 @@
-import time
 import discord
 import pygit2
 import itertools
 import datetime
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 from discord.ext import commands
 from utils.bot import ModMail
 from typing import Union
-
+import requests
 
 def format_commit(commit: pygit2.Commit) -> str:
     # CREDITS: https://github.com/Rapptz/RoboDanny
@@ -80,6 +82,16 @@ Other links:
             url=f"https://discord.com/oauth2/authorize?client_id={self.bot.user.id}&permissions=1879174385&scope=bot%20applications.commands",
             color=0x00ff00
         ).set_footer(text="Thank you very much! 💖"))
+
+     @commands.hybrid_command(name="vote", help="Vote for the bot!")
+     async def vote(self, ctx):
+        embed = discord.Embed(
+        title="Vote for me!",
+        description=f" Thank you very much! 💖, [Vote here](https://top.gg/bot/781639675868872796/vote)",
+        color=0x00ff00
+        ).set_footer(text="Thank you very much! 💖")
+        await ctx.reply(embed=embed)
+
 
 async def setup(bot):
     await bot.add_cog(Info(bot))

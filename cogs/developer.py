@@ -15,7 +15,7 @@ class Developer(commands.Cog):
         dbl_token = os.getenv("TOP_GG")
         self.topggpy = topgg.DBLClient(bot, dbl_token)
 
-    @tasks.loop(minutes=30)
+    @tasks.loop(hours=6)
     async def update_stats(self):
      try:
         await self.topggpy.post_guild_count()
@@ -26,17 +26,21 @@ class Developer(commands.Cog):
     @commands.Cog.listener()
     async def on_dbl_vote(self, data): 
      if data["type"] == "test":
-        # this is roughly equivalent to
-        # `return await on_dbl_test(data)` in this case
         return self.bot.dispatch("dbl_test", data)
      embed = discord.Embed(title="Vote", description=f"Thanks for voting for the bot! You can vote every 12 hours\n\n", color=0xff00c8)
      embed.set_thumbnail(url=self.bot.user.avatar.url)
-     await self.bot.get_user(data["user"]).send(embed=embed)
+     await self.bot.get_user(int(data["user"])).send(embed=embed)
 
 
     @commands.Cog.listener()
     async def on_dbl_test(self, data):
-        print(f"Received a test vote:\n{data}")
+        print(f"Received test vote from {data}")
+        try:
+         embed = discord.Embed(title="Vote", description=f"Thanks for voting for the bot! You can vote every 12 hours\n\n", color=0xff00c8)
+         embed.set_thumbnail(url=self.bot.user.avatar.url)
+         await self.bot.get_user(int(data["user"])).send(embed=embed)
+        except:
+            pass
 
     @commands.Cog.listener('on_command')
     async def cmd_logs(self, ctx):
@@ -107,6 +111,10 @@ If you face any issues, feel free to join our support server:
         ).set_footer(text=f"Owner ID: {guild.owner_id}")
         if guild.icon is not None:
             log_embed.set_thumbnail(url=guild.icon.url)
+        data = await self.db.find_server(guild.id)
+        if data:
+            await self.db.delete_server(guild.id)
+            print(f"Deleted server {guild.id} from database")
 
         await self.bot.get_channel(889116736077570068).send(embed=log_embed)
     
