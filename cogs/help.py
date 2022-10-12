@@ -29,7 +29,7 @@ async def get_bot_help(bot: ModMail) -> discord.Embed:
 async def get_cog_help(bot: ModMail, cog: commands.Cog) -> discord.Embed:
     return discord.Embed(
         title=f"{cog.qualified_name} Help",
-        description='\n'.join([f"`{bot.command_prefix}{c.qualified_name}{' ' + c.signature if c.signature else ''}` - {c.help}" for c in cog.get_commands()]),
+        description='\n'.join([f"`{bot.command_prefix}{c.qualified_name}{' ' + c.signature if c.signature else ''}` - {c.help}" for c in cog.get_commands()] + [f"`/{c.qualified_name}` - {c.description}" for c in cog.walk_app_commands()]),
         color=0x00ff00
     ).add_field(
         name="‎",

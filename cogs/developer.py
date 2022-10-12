@@ -15,7 +15,7 @@ class Developer(commands.Cog):
         dbl_token = os.getenv("TOP_GG")
         self.topggpy = topgg.DBLClient(bot, dbl_token)
 
-    @tasks.loop(minutes=30)
+    @tasks.loop(hours=6)
     async def update_stats(self):
      try:
         await self.topggpy.post_guild_count()
