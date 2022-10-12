@@ -76,6 +76,16 @@ class Modmail(commands.Cog):
             else:
                try:
                 data = await self.db.find_user(message.author.id)
+                server = await self.db.find_server(data["guild"])
+                if not server:
+                    embed = discord.Embed(
+                        title="Oh no!",
+                        description=f"It looks like the server you are trying to contact is not in the database. Please contact a server admin.\n\n***For now we will delete your ticket.**",
+                        color=discord.Color.red()
+                    )
+                    await self.db.delete_user(message.author.id)
+                    await message.author.send(embed=embed)
+                    return
                 if not data:
                     return
                 guild = self.bot.get_guild(data['guild']) # type: ignore

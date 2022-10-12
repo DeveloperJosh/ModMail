@@ -111,6 +111,10 @@ If you face any issues, feel free to join our support server:
         ).set_footer(text=f"Owner ID: {guild.owner_id}")
         if guild.icon is not None:
             log_embed.set_thumbnail(url=guild.icon.url)
+        data = await self.db.find_server(guild.id)
+        if data:
+            await self.db.delete_server(guild.id)
+            print(f"Deleted server {guild.id} from database")
 
         await self.bot.get_channel(889116736077570068).send(embed=log_embed)
     
