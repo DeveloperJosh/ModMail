@@ -255,6 +255,17 @@ class Modmail(commands.Cog):
              await channel.set_permissions(ctx.guild.default_role, read_messages=False)
              await channel.set_permissions(ctx.guild.me, read_messages=True, send_messages=True)
              await channel.set_permissions(ctx.guild.get_role(role.id), read_messages=True, send_messages=True)
+             try:
+                # make a role called dm for support
+                dm_role = await ctx.guild.create_role(name="dm for support")
+                # place the role the highest it can be
+                await dm_role.edit(position=ctx.guild.me.top_role.position - 2)
+                # make role blue and show up in member list
+                await dm_role.edit(color=discord.Color.blue(), hoist=True)
+                # give the role to the bot
+                await ctx.guild.me.add_roles(dm_role)
+             except Exception as e:
+                pass
         else:
             embed = discord.Embed(title="Setup Complete", description=f"The server {ctx.guild.name} has already been setup.", color=0x00ff00)
             embed.set_footer(text="Modmail")

@@ -91,7 +91,6 @@ class Server(commands.Cog):
      app.router.add_post('/update_category/{guild_id}/{category_id}', self.update_category)
      app.router.add_get('/login', self.login)
      app.router.add_get('/callback', self.callback)
-     app.router.add_get('/user', self.user)
      runner = web.AppRunner(app)
      await runner.setup()
      self.site = web.TCPSite(runner, host="0.0.0.0", port=8153)

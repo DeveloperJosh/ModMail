@@ -18,6 +18,7 @@ class Database:
         self.servers = self.db["servers"]
         self.commands = self.db["commands"]
         self.opt_out = self.db["optout"]
+        self.vote = self.db["vote"]
 
     async def block(self, id):
         if await self.blocked.find_one({"_id": id}):
@@ -182,5 +183,34 @@ class Database:
     async def delete_command(self, id, command):
         if await self.find_command(id, command):
             await self.commands.delete_one({"guild": id, "command": command})
+            return True
+        return False
+
+    ################################################
+
+    async def find_vote(self, id):
+        # return the vote data
+        data = await self.vote.find_one({"_id": id})
+        if data:
+            return data
+        return False
+
+    async def create_vote(self, id, data):
+        if await self.find_vote(id):
+            return False
+        things = {"_id": id}
+        things.update(data)
+        await self.vote.insert_one(things)
+        return True
+
+    async def update_vote(self, id, data):
+        if await self.vote.find_one({"_id": id}):
+            await self.vote.update_one({"_id": id}, {"$set": data})
+            return True
+        return False
+
+    async def delete_vote(self, id):
+        if await self.vote.find_one({"_id": id}):
+            await self.vote.delete_one({"_id": id})
             return True
         return False
