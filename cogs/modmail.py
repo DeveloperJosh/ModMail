@@ -102,6 +102,15 @@ class Modmail(commands.Cog):
                 logging.error(e)
                 await message.channel.send("An error occured. Please try again later.")
 
+    @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        if await self.db.find_user(member.id):
+            await self.db.delete_user(member.id)
+            try:
+                await member.send(embed=error_embed("Oh no!", "You have left a server that you had a ticket in. Your ticket has been deleted."))
+            except:
+                pass
+
     @commands.Cog.listener(name="on_message")
     async def reply_to_ticket(self, message):
         if message.content.startswith(self.bot.command_prefix):
@@ -243,6 +252,9 @@ class Modmail(commands.Cog):
              await category.set_permissions(ctx.guild.me, read_messages=True, send_messages=True)
              await category.set_permissions(ctx.guild.default_role, read_messages=False, send_messages=False)
              await category.set_permissions(ctx.guild.get_role(role.id), read_messages=True, send_messages=True)
+             await channel.set_permissions(ctx.guild.default_role, read_messages=False)
+             await channel.set_permissions(ctx.guild.me, read_messages=True, send_messages=True)
+             await channel.set_permissions(ctx.guild.get_role(role.id), read_messages=True, send_messages=True)
         else:
             embed = discord.Embed(title="Setup Complete", description=f"The server {ctx.guild.name} has already been setup.", color=0x00ff00)
             embed.set_footer(text="Modmail")

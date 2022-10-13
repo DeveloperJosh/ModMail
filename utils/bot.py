@@ -50,17 +50,8 @@ class ModMail(commands.Bot):
         # check debug mode
         devs = [542798185857286144, 321750582912221184]
         if self.debug:
-            # check if the message is from a developer
-            if message.author.id not in devs:
-                embed = discord.Embed(title='Debug', description=f'Please wait till the bot is out of debug mode\n\n', color=0xff00c8)
-                embed.add_field(
-                name="‎",
-                value=f"[Github](https://github.com/DeveloperJosh/ModMail) | [Support Server](https://discord.gg/TeSHENet9M) | [Old Bot](https://github.com/DeveloperJosh/MailHook)",
-                inline=False
-                 )
-                await message.channel.send(embed=embed)
                 return
-            elif message.author.id in devs:
+        elif message.author.id in devs:
                 await self.process_commands(message)
         else:
             await self.process_commands(message)
@@ -93,6 +84,6 @@ async def main():
     intents.webhooks = True
     ext = ['modmail', 'errors', 'developer', 'config', 'snippets', 'help', 'info', 'webserver']
     async with ClientSession() as server_client:
-     async with ModMail(debug=False, command_prefix="?", allowed_mentions=discord.AllowedMentions(everyone=False, roles=True, users=True, replied_user=True),  activity=discord.Game("DM for support"), owner_ids=[542798185857286144, 321750582912221184], help_command=None, client=server_client, intents=intents, testing_guild_id=884470177176109056, initial_cogs=ext) as bot:
+     async with ModMail(debug=True, command_prefix="?", allowed_mentions=discord.AllowedMentions(everyone=False, roles=True, users=True, replied_user=True),  activity=discord.Game("DM for support"), owner_ids=[542798185857286144, 321750582912221184], help_command=None, client=server_client, intents=intents, testing_guild_id=884470177176109056, initial_cogs=ext) as bot:
       token = os.getenv("DISCORD_TOKEN")
       await bot.start(f"{token}", reconnect=True)
