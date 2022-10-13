@@ -1,4 +1,6 @@
+import asyncio
 from typing import Dict
+import time
 import discord
 from utils.db import Database
 from discord.ext import commands, tasks
@@ -24,6 +26,12 @@ class Developer(commands.Cog):
         print(f"Failed to post server count\n{e.__class__.__name__}: {e}")
 
     @commands.Cog.listener()
+    async def on_ready(self):
+        password = os.getenv("TOP_PASSWORD")
+        self.bot.topgg_webhook = topgg.WebhookManager(self.bot).dbl_webhook("/webhook", f"{password}")
+        self.bot.topgg_webhook.run(5000)  # this method can be awaited as well
+
+    @commands.Cog.listener()
     async def on_dbl_vote(self, data): 
      if data["type"] == "test":
         return self.bot.dispatch("dbl_test", data)
@@ -31,16 +39,32 @@ class Developer(commands.Cog):
      embed.set_thumbnail(url=self.bot.user.avatar.url)
      await self.bot.get_user(int(data["user"])).send(embed=embed)
 
-
     @commands.Cog.listener()
     async def on_dbl_test(self, data):
         print(f"Received test vote from {data}")
         try:
-         embed = discord.Embed(title="Vote", description=f"Thanks for voting for the bot! You can vote every 12 hours\n\n", color=0xff00c8)
+         embed = discord.Embed(title="Vote", description=f"Thanks for voting for the bot! You can vote every 12 hours\n\nTest", color=0xff00c8)
          embed.set_thumbnail(url=self.bot.user.avatar.url)
          await self.bot.get_user(int(data["user"])).send(embed=embed)
-        except:
-            pass
+         voted = await self.db.find_vote(data["user"])
+         if voted:
+            return
+         stuff = {
+            "_id": data["user"],
+            "voted": True,
+            "time": time.time()
+         }
+         await self.db.create_vote(data["user"], stuff)
+         # wait 12 hours before removing vote
+         hours_12 = 43200
+         await asyncio.sleep(hours_12)
+         try:
+            await self.db.delete_vote(data["user"])
+         except Exception as e:
+            print("Failed to delete vote")
+            return
+        except Exception as e:
+            print(e)
 
     @commands.Cog.listener('on_command')
     async def cmd_logs(self, ctx):
@@ -206,9 +230,6 @@ If you face any issues, feel free to join our support server:
     @commands.is_owner()
     async def start(self, ctx):
         self.update_stats.start()
-        password = os.getenv("TOP_PASSWORD")
-        self.bot.topgg_webhook = topgg.WebhookManager(self.bot).dbl_webhook("/webhook", f"{password}")
-        self.bot.topgg_webhook.run(5000)  # this method can be awaited as well
         embed = discord.Embed(title='Start', description=f'Started', color=0xff00c8)
         await ctx.send(embed=embed)
 

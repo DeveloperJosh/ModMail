@@ -50,17 +50,8 @@ class ModMail(commands.Bot):
         # check debug mode
         devs = [542798185857286144, 321750582912221184]
         if self.debug:
-            # check if the message is from a developer
-            if message.author.id not in devs:
-                embed = discord.Embed(title='Debug', description=f'Please wait till the bot is out of debug mode\n\n', color=0xff00c8)
-                embed.add_field(
-                name="‎",
-                value=f"[Github](https://github.com/DeveloperJosh/ModMail) | [Support Server](https://discord.gg/TeSHENet9M) | [Old Bot](https://github.com/DeveloperJosh/MailHook)",
-                inline=False
-                 )
-                await message.channel.send(embed=embed)
                 return
-            elif message.author.id in devs:
+        elif message.author.id in devs:
                 await self.process_commands(message)
         else:
             await self.process_commands(message)
