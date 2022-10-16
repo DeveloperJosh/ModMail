@@ -38,9 +38,9 @@ class Ticket():
             guild_data = await self.db.find_server(int(guild_id))
             guild = self.bot.get_guild(int(guild_id))
             try:
-             channel = await guild.create_text_channel(name=f"ticket-{message.author.id}", category=guild.get_channel(guild_data['category'])) # type: ignore
+             channel = await guild.create_text_channel(name=f"ticket-{message.author.id}", category=guild.get_channel(guild_data.get('category'))) # type: ignore
              await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False) # type: ignore
-             role = guild.get_role(guild_data['staff_role']) # type: ignore
+             role = guild.get_role(guild_data.get('staff_role')) # type: ignore
              await channel.set_permissions(role, read_messages=True, send_messages=True) # type: ignore
             # give bot perms in the channel
              await channel.set_permissions(self.bot.user, read_messages=True, send_messages=True) # type: ignore
@@ -66,7 +66,7 @@ class Ticket():
              embed.add_field(name="Message", value=f"{message.content}", inline=True) # type: ignore
             embed.set_footer(text="Modmail")
             try:
-             await channel_id.send(f"<@&{guild_data['staff_role']}>\nUsing `{self.bot.command_prefix}` in this ticket will block messages from being sent") # type: ignore
+             await channel_id.send(f"<@&{guild_data.get('staff_role')}>\nUsing `{self.bot.command_prefix}` in this ticket will block messages from being sent") # type: ignore
             except Exception as e:
                 print(e)
             images = []
