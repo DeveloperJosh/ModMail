@@ -1,8 +1,11 @@
 from enum import Flag
 from sys import prefix
+from typing import Optional
 import motor.motor_asyncio
 import os
 from dotenv import load_dotenv
+
+from utils.exceptions import NotSetup
 
 load_dotenv()
 class Database:
@@ -121,6 +124,21 @@ class Database:
         if data:
             return data
         return False
+
+    async def get_server(self, guild_id: int, raise_error: bool = True) -> Optional[dict]:
+        # return the server data
+        data = await self.servers.find_one({"_id": guild_id})
+        if data is None:
+            if raise_error:
+                raise NotSetup()
+            else:
+                return None
+        if data.get('staff_role') is None:
+            if raise_error:
+                raise NotSetup()
+            else:
+                return None
+        return data
 
     async def create_server(self, id, data):
         if await self.find_server(id):
