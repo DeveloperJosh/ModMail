@@ -6,3 +6,7 @@ motor==3.0.0
 pymongo==4.2.0
 python-dotenv==0.21.0
 pygit2==1.10.1
+asyncio
+humanfriendly
+hikari
+aiohttp_cors
