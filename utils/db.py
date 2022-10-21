@@ -155,6 +155,18 @@ class Database:
             return True
         return False
 
+    async def update_server_list(self, id, data):
+        if await self.servers.find_one({"_id": id}):
+            await self.servers.update_one({"_id": id}, {"$push": data})
+            return True
+        return False
+
+    async def remove_server_list(self, id, data):
+        if await self.servers.find_one({"_id": id}):
+            await self.servers.update_one({"_id": id}, {"$pull": data})
+            return True
+        return False
+
     async def delete_server(self, id):
         if await self.servers.find_one({"_id": id}):
             await self.servers.delete_one({"_id": id})

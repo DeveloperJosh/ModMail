@@ -232,6 +232,6 @@ If you face any issues, feel free to join our support server:
         self.update_stats.start()
         embed = discord.Embed(title='Start', description=f'Started', color=0xff00c8)
         await ctx.send(embed=embed)
-
+        
 async def setup(bot):
     await bot.add_cog(Developer(bot))

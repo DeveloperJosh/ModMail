@@ -41,7 +41,7 @@ class Modmail(commands.Cog):
               view = ServersDropdownView()
               select = ServersDropdown(list(final_mutual_guilds))
               view.add_item(select)
-              main_msg = await message.channel.send("Hey looks like you want to start a modmail thread.\nIf so, please select a server you want to contact and continue.\nNote you have to hit confirm.", view=view)
+              main_msg = await message.channel.send("Hey looks like you want to start a modmail thread.\nIf so, please select a server you want to contact and continue.", view=view)
               dropdown_concurrency.append(message.author.id)
               await view.wait()
               if not view.yes:

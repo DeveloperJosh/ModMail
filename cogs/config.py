@@ -5,7 +5,6 @@ from discord import app_commands
 from discord.ext import commands
 from utils.db import Database
 from utils.embed import Embed, error_embed
-from utils.dropdown import RolesDropdown, RolesDropdownView, CategoryDropdown, CategoryDropdownView, ChannelsDropdown, ChannelsDropdownView
 
 
 ## TODO: Clean the code, add more comments, and add more features, make it much more user friendly
@@ -33,6 +32,13 @@ class Config(commands.Cog):
         embed.add_field(name="Transcripts", value=transcripts, inline=True)
         role = discord.utils.get(ctx.guild.roles, id=server_settings["staff_role"])
         embed.add_field(name="Role", value=role, inline=True)
+        more_roles = server_settings.get('more_roles')
+        if more_roles:
+         roles = ""
+         for role in more_roles:
+            #roles = roles + f"<@&{role}> "
+            roles = roles + f"{discord.utils.get(ctx.guild.roles, id=role)}\n"
+         embed.add_field(name="More Roles", value=roles, inline=True)
         embed.add_field(
         name="‎",
         value=f"[Github](https://github.com/DeveloperJosh/ModMail) | [Support Server](https://discord.gg/TeSHENet9M) | [Old Bot](https://github.com/DeveloperJosh/MailHook)",
@@ -43,7 +49,7 @@ class Config(commands.Cog):
     # app_commands
     @app_commands.command(name="edit-config", description="Edit the config of the bot")
     @app_commands.checks.has_permissions(manage_guild=True)
-    async def app_config(self, ctx, role: discord.Role = None, category: discord.CategoryChannel = None, transcripts: discord.TextChannel = None):  # type: ignore
+    async def app_config(self, ctx, role: discord.Role = None, more_roles: discord.Role = None, category: discord.CategoryChannel = None, transcripts: discord.TextChannel = None):  # type: ignore
         if role is not None:
             # check if bot has perms
             if not ctx.guild.me.guild_permissions.manage_roles:
@@ -54,6 +60,27 @@ class Config(commands.Cog):
             try:
              await self.db.update_server(ctx.guild.id, {"staff_role": role.id})
              await ctx.response.send_message(embed=Embed(title="Config", description=f"Successfully set the role to {role.mention}", color=0x00ff00))
+            except Exception as e:
+                await ctx.response.send_message(embed=error_embed("Error:x:", f"An error occurred: {e}"))
+        elif more_roles is not None:
+            # check if bot has perms
+            if not ctx.guild.me.guild_permissions.manage_roles:
+                await ctx.response.send_message(embed=error_embed("Error:x:", "I do not have permission to manage roles"))
+                return
+            if not await self.db.find_server(ctx.guild.id):
+               await ctx.response.send_message(embed=error_embed("Error:x:", "You need to run `/setup` first"))
+            try:
+             # if there is a role in the list add it to the list using the $push operator
+             # check if there is 3 roles in the more_roles list
+             data = await self.db.get_server(ctx.guild.id, raise_error=False)
+             if len(data["more_roles"]) == 3:
+                # send an error embed
+                # update number 2 to the new role
+                await self.db.update_server(ctx.guild.id, {"more_roles.2": more_roles.id})
+                await ctx.response.send_message(embed=Embed(title="Config", description=f"Successfully set the role to {more_roles.mention}", color=0x00ff00))
+                return
+             await self.db.update_server_list(ctx.guild.id, {"more_roles": more_roles.id})
+             await ctx.response.send_message(embed=Embed(title="Config", description=f"Successfully set the role to {more_roles.mention}", color=0x00ff00))
             except Exception as e:
                 await ctx.response.send_message(embed=error_embed("Error:x:", f"An error occurred: {e}"))
         elif category is not None:
