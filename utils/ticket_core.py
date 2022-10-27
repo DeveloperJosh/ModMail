@@ -67,6 +67,17 @@ class Ticket():
             embed.set_footer(text="Modmail")
             try:
              await channel_id.send(f"<@&{guild_data.get('staff_role')}>\nUsing `{self.bot.command_prefix}` in this ticket will block messages from being sent") # type: ignore
+             # now if there are more_roles in the db, add them to a message like this: <@&{role_id}> <@&{role_id}>, etc.
+             if guild_data.get('more_roles'):
+                    more_roles = guild_data.get('more_roles')
+                    roles = ""
+                    for role in more_roles:
+                        roles = roles + f"<@&{role}> "
+                    # now before we send the message, we need to check if the roles are valid and if they don't exist, remove them from the db
+                    role_check = discord.utils.get(guild.roles, id=role)
+                    if role_check is None:
+                        await self.db.remove_server_list(guild_id, {"more_roles": role})
+                    await channel_id.send(f"{roles}")
             except Exception as e:
                 print(e)
             images = []
