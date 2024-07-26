@@ -9,3 +9,4 @@ pygit2
 asyncio
 humanfriendly
 aiohttp_cors
+requests
