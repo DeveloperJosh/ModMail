@@ -1,30 +1,28 @@
 import logging
-from typing import Literal
+from typing import Optional
 import discord
 from discord import app_commands
 from discord.ext import commands
 from utils.db import Database
 from utils.embed import Embed, error_embed
 
-
-## TODO: Clean the code, add more comments, and add more features, make it much more user friendly
-
 class Config(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.db = Database()
 
     @commands.hybrid_command(help="Configure the bot", aliases=['c'])
     @commands.has_guild_permissions(manage_guild=True)
     @commands.guild_only()
-    async def config(self, ctx):
-        # show the config menu like a help command
+    async def config(self, ctx: commands.Context):
+        # Fetch server settings from the database
         server_settings = await self.db.find_server(ctx.guild.id)
         if not server_settings:
-            # send an error embed
+            # Send an error embed if the server is not set up
             await ctx.send(embed=error_embed("Error:x:", "This server is not setup yet, please use `?setup` to setup the server"))
             return
-        # send the config settings
+
+        # Prepare the config embed
         embed = Embed(title="Config", description="Here are the current config settings for this server\n\nTo edit the config run `/edit-config [setting]`", color=0x00ff00)
         category = discord.utils.get(ctx.guild.categories, id=server_settings["category"])
         embed.add_field(name="Category", value=category, inline=True)
@@ -32,88 +30,104 @@ class Config(commands.Cog):
         embed.add_field(name="Transcripts", value=transcripts, inline=True)
         role = discord.utils.get(ctx.guild.roles, id=server_settings["staff_role"])
         embed.add_field(name="Role", value=role, inline=True)
+
         more_roles = server_settings.get('more_roles')
         if more_roles:
-         roles = ""
-         for role in more_roles:
-            #roles = roles + f"<@&{role}> "
-            roles = roles + f"{discord.utils.get(ctx.guild.roles, id=role)}\n"
-         embed.add_field(name="More Roles", value=roles, inline=True)
+            roles = "\n".join([str(discord.utils.get(ctx.guild.roles, id=role)) for role in more_roles])
+            embed.add_field(name="More Roles", value=roles, inline=True)
+
         embed.add_field(
-        name="‎",
-        value=f"[Github](https://github.com/DeveloperJosh/ModMail) | [Support Server](https://discord.gg/TeSHENet9M) | [Old Bot](https://github.com/DeveloperJosh/MailHook)",
-        inline=False
-    )
+            name="‎",
+            value="[Github](https://github.com/DeveloperJosh/ModMail) | [Support Server](https://discord.gg/TeSHENet9M) | [Old Bot](https://github.com/DeveloperJosh/MailHook)",
+            inline=False
+        )
         await ctx.send(embed=embed)
 
-    # app_commands
     @app_commands.command(name="edit-config", description="Edit the config of the bot")
     @app_commands.checks.has_permissions(manage_guild=True)
-    async def app_config(self, ctx, role: discord.Role = None, more_roles: discord.Role = None, category: discord.CategoryChannel = None, transcripts: discord.TextChannel = None):  # type: ignore
-        if role is not None:
-            # check if bot has perms
-            if not ctx.guild.me.guild_permissions.manage_roles:
-                await ctx.response.send_message(embed=error_embed("Error:x:", "I do not have permission to manage roles"))
-                return
-            if not await self.db.find_server(ctx.guild.id):
-               await ctx.response.send_message(embed=error_embed("Error:x:", "You need to run `/setup` first"))
-            try:
-             await self.db.update_server(ctx.guild.id, {"staff_role": role.id})
-             await ctx.response.send_message(embed=Embed(title="Config", description=f"Successfully set the role to {role.mention}", color=0x00ff00))
-            except Exception as e:
-                await ctx.response.send_message(embed=error_embed("Error:x:", f"An error occurred: {e}"))
-        elif more_roles is not None:
-            # check if bot has perms
-            if not ctx.guild.me.guild_permissions.manage_roles:
-                await ctx.response.send_message(embed=error_embed("Error:x:", "I do not have permission to manage roles"))
-                return
-            if not await self.db.find_server(ctx.guild.id):
-               await ctx.response.send_message(embed=error_embed("Error:x:", "You need to run `/setup` first"))
-            try:
-             # if there is a role in the list add it to the list using the $push operator
-             # check if there is 3 roles in the more_roles list
-             data = await self.db.get_server(ctx.guild.id, raise_error=False)
-             if len(data["more_roles"]) == 3:
-                # send an error embed
-                # update number 2 to the new role
-                await self.db.update_server(ctx.guild.id, {"more_roles.2": more_roles.id})
-                await ctx.response.send_message(embed=Embed(title="Config", description=f"Successfully set the role to {more_roles.mention}", color=0x00ff00))
-                return
-             await self.db.update_server_list(ctx.guild.id, {"more_roles": more_roles.id})
-             await ctx.response.send_message(embed=Embed(title="Config", description=f"Successfully set the role to {more_roles.mention}", color=0x00ff00))
-            except Exception as e:
-                await ctx.response.send_message(embed=error_embed("Error:x:", f"An error occurred: {e}"))
-        elif category is not None:
-            if not ctx.guild.me.guild_permissions.manage_channels:
-                await ctx.response.send_message(embed=error_embed("Error:x:", "I do not have permission to manage channels"))
-                return
-            if not await self.db.find_server(ctx.guild.id):
-                await ctx.response.send_message(embed=error_embed("Error:x:", "You need to run `/setup` first"))
-            await self.db.update_server(ctx.guild.id, {"category": category.id})
-            await ctx.response.send_message(embed=Embed(title="Config", description=f"Successfully set the category to {category.mention}", color=0x00ff00))
-        elif transcripts is not None:
-            if not ctx.guild.me.guild_permissions.manage_channels:
-                await ctx.response.send_message(embed=error_embed("Error:x:", "I do not have permission to manage channels"))
-                return
-            if not await self.db.find_server(ctx.guild.id):
-                await ctx.response.send_message(embed=error_embed("Error:x:", "You need to run `/setup` first"))
-            await self.db.update_server(ctx.guild.id, {"transcript_channel": transcripts.id})
-            await ctx.response.send_message(embed=Embed(title="Config", description=f"Successfully set the transcript channel to {transcripts.mention}", color=0x00ff00))
-        # if more then 1 option is not None then send error
-        elif role is not None and category is not None and transcripts is not None:
-            await ctx.response.send_message(embed=error_embed("Error:x:", "You can only edit one setting at a time"))
-        else:
-            embed = Embed(title="Config", description=f"This command is used to edit the config of the bot.\n\n**Usage:**\n`/edit-config [setting] [value]`\n\n**Settings:**\n`role` - The role that can start a modmail thread.\n`category` - The category that modmail threads will be created in.\n`transcripts` - The channel that transcripts will be sent to.", color=0x00ff00)
-            await ctx.response.send_message(embed=embed)
+    async def app_config(self, interaction: discord.Interaction, role: Optional[discord.Role] = None, more_roles: Optional[discord.Role] = None, category: Optional[discord.CategoryChannel] = None, transcripts: Optional[discord.TextChannel] = None):
+        # Check if the server is set up
+        if not await self.db.find_server(interaction.guild.id):
+            await interaction.response.send_message(embed=error_embed("Error:x:", "You need to run `/setup` first"))
+            return
 
-    @app_config.error  # type: ignore
-    async def app_config_error(self, ctx: discord.Integration, error):
-        if isinstance(error, discord.app_commands.errors.MissingPermissions):
-            await ctx.response.send_message(embed=error_embed("Error:x:", "You do not have permission to use this command")) # type: ignore
-        elif isinstance(error, discord.app_commands.errors.CommandLimitReached):
-            await ctx.response.send_message(embed=error_embed("Error:x:", "You can only edit one setting at a time")) # type: ignore
+        # Update the server settings based on provided arguments
+        if role is not None:
+            await self.update_role(interaction, role)
+        elif more_roles is not None:
+            await self.update_more_roles(interaction, more_roles)
+        elif category is not None:
+            await self.update_category(interaction, category)
+        elif transcripts is not None:
+            await self.update_transcripts(interaction, transcripts)
+        else:
+            # If no valid arguments are provided, show the usage information
+            embed = Embed(
+                title="Config",
+                description="This command is used to edit the config of the bot.\n\n**Usage:**\n`/edit-config [setting] [value]`\n\n**Settings:**\n`role` - The role that can start a modmail thread.\n`category` - The category that modmail threads will be created in.\n`transcripts` - The channel that transcripts will be sent to.",
+                color=0x00ff00
+            )
+            await interaction.response.send_message(embed=embed)
+
+    async def update_role(self, interaction: discord.Interaction, role: discord.Role):
+        # Check if the bot has permission to manage roles
+        if not interaction.guild.me.guild_permissions.manage_roles:
+            await interaction.response.send_message(embed=error_embed("Error:x:", "I do not have permission to manage roles"))
+            return
+
+        # Update the staff role in the database
+        try:
+            await self.db.update_server(interaction.guild.id, {"staff_role": role.id})
+            await interaction.response.send_message(embed=Embed(title="Config", description=f"Successfully set the role to {role.mention}", color=0x00ff00))
+        except Exception as e:
+            await interaction.response.send_message(embed=error_embed("Error:x:", f"An error occurred: {e}"))
+
+    async def update_more_roles(self, interaction: discord.Interaction, more_roles: discord.Role):
+        # Check if the bot has permission to manage roles
+        if not interaction.guild.me.guild_permissions.manage_roles:
+            await interaction.response.send_message(embed=error_embed("Error:x:", "I do not have permission to manage roles"))
+            return
+
+        # Update the more roles list in the database
+        try:
+            data = await self.db.get_server(interaction.guild.id, raise_error=False)
+            if len(data["more_roles"]) == 3:
+                await self.db.update_server(interaction.guild.id, {"more_roles.2": more_roles.id})
+            else:
+                await self.db.update_server_list(interaction.guild.id, {"more_roles": more_roles.id})
+            await interaction.response.send_message(embed=Embed(title="Config", description=f"Successfully set the role to {more_roles.mention}", color=0x00ff00))
+        except Exception as e:
+            await interaction.response.send_message(embed=error_embed("Error:x:", f"An error occurred: {e}"))
+
+    async def update_category(self, interaction: discord.Interaction, category: discord.CategoryChannel):
+        # Check if the bot has permission to manage channels
+        if not interaction.guild.me.guild_permissions.manage_channels:
+            await interaction.response.send_message(embed=error_embed("Error:x:", "I do not have permission to manage channels"))
+            return
+
+        # Update the category in the database
+        await self.db.update_server(interaction.guild.id, {"category": category.id})
+        await interaction.response.send_message(embed=Embed(title="Config", description=f"Successfully set the category to {category.mention}", color=0x00ff00))
+
+    async def update_transcripts(self, interaction: discord.Interaction, transcripts: discord.TextChannel):
+        # Check if the bot has permission to manage channels
+        if not interaction.guild.me.guild_permissions.manage_channels:
+            await interaction.response.send_message(embed=error_embed("Error:x:", "I do not have permission to manage channels"))
+            return
+
+        # Update the transcript channel in the database
+        await self.db.update_server(interaction.guild.id, {"transcript_channel": transcripts.id})
+        await interaction.response.send_message(embed=Embed(title="Config", description=f"Successfully set the transcript channel to {transcripts.mention}", color=0x00ff00))
+
+    @app_config.error
+    async def app_config_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+        if isinstance(error, app_commands.errors.MissingPermissions):
+            await interaction.response.send_message(embed=error_embed("Error:x:", "You do not have permission to use this command"))
+        elif isinstance(error, app_commands.errors.CommandLimitReached):
+            await interaction.response.send_message(embed=error_embed("Error:x:", "You can only edit one setting at a time"))
         else:
             logging.error(error)
+            await interaction.response.send_message(embed=error_embed("Error:x:", "An unexpected error occurred"))
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Config(bot))
