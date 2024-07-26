@@ -1,10 +1,10 @@
 # ModMail
 
-I'm making this bot to replace my modmail [MailHook](https://github.com/DeveloperJosh/MailHook)
+The best ModMail bot for Discord. This bot is made for Discord servers that need a ticket system for their users to contact staff members. This bot is made with Python and uses MongoDB as the database.
 
 ## Features
 
-- Dashboard
+- Dashboard - Being remade in Next.js
 - 24/7 Support
 - Fast response time
 - Easy to use
@@ -13,7 +13,7 @@ I'm making this bot to replace my modmail [MailHook](https://github.com/Develope
 
 # Requirements
 
-- [Python 3.9](https://www.python.org/downloads/)
+- [Python](https://www.python.org/downloads/)
 - [MongoDB](https://www.mongodb.com/try/download/community)
 
 # Installation
