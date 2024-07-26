@@ -33,15 +33,6 @@ class ModMail(commands.Bot):
         logger = logging.getLogger("discord")
         logger.setLevel(logging.INFO)
         time = datetime.datetime.now()
-        handler = logging.handlers.RotatingFileHandler(
-        filename=f"logs/{time.strftime('%Y-%m-%d')}.log",
-        encoding="utf-8", 
-        mode="a", 
-        maxBytes=10 * 1024 * 1024, 
-        backupCount=5)
-        handler.setFormatter(
-        logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s"))
-        logger.addHandler(handler)
 
     async def setup_hook(self) -> None:
 
