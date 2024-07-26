@@ -11,7 +11,7 @@ class Database:
     This class is used to handle all the database stuff
     """
     def __init__(self):
-        self.client = motor.motor_asyncio.AsyncIOMotorClient(os.getenv("MONGO_URI"))
+        self.client = motor.motor_asyncio.AsyncIOMotorClient(os.getenv("MONGO_URL"))
         self.db = self.client["mail"]
         self.collection = self.db["mail"]
         self.blocked = self.db["blocked"]
