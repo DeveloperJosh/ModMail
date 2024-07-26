@@ -4,7 +4,7 @@ discord.py
 dnspython
 motor
 pymongo
-python-dotenv=
+python-dotenv
 pygit2
 asyncio
 humanfriendly
