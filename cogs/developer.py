@@ -4,7 +4,6 @@ import time
 import discord
 from utils.db import Database
 from discord.ext import commands, tasks
-import topgg
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -14,57 +13,6 @@ class Developer(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.db = Database()
-        dbl_token = os.getenv("TOP_GG")
-        self.topggpy = topgg.DBLClient(bot, dbl_token)
-
-    @tasks.loop(hours=6)
-    async def update_stats(self):
-     try:
-        await self.topggpy.post_guild_count()
-        print(f"Posted server count ({self.topggpy.guild_count})")
-     except Exception as e:
-        print(f"Failed to post server count\n{e.__class__.__name__}: {e}")
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        password = os.getenv("TOP_PASSWORD")
-        self.bot.topgg_webhook = topgg.WebhookManager(self.bot).dbl_webhook("/webhook", f"{password}")
-        self.bot.topgg_webhook.run(5000)  # this method can be awaited as well
-
-    @commands.Cog.listener()
-    async def on_dbl_vote(self, data): 
-     if data["type"] == "test":
-        return self.bot.dispatch("dbl_test", data)
-     embed = discord.Embed(title="Vote", description=f"Thanks for voting for the bot! You can vote every 12 hours\n\n", color=0xff00c8)
-     embed.set_thumbnail(url=self.bot.user.avatar.url)
-     await self.bot.get_user(int(data["user"])).send(embed=embed)
-
-    @commands.Cog.listener()
-    async def on_dbl_test(self, data):
-        print(f"Received test vote from {data}")
-        try:
-         embed = discord.Embed(title="Vote", description=f"Thanks for voting for the bot! You can vote every 12 hours\n\nTest", color=0xff00c8)
-         embed.set_thumbnail(url=self.bot.user.avatar.url)
-         await self.bot.get_user(int(data["user"])).send(embed=embed)
-         voted = await self.db.find_vote(data["user"])
-         if voted:
-            return
-         stuff = {
-            "_id": data["user"],
-            "voted": True,
-            "time": time.time()
-         }
-         await self.db.create_vote(data["user"], stuff)
-         # wait 12 hours before removing vote
-         hours_12 = 43200
-         await asyncio.sleep(hours_12)
-         try:
-            await self.db.delete_vote(data["user"])
-         except Exception as e:
-            print("Failed to delete vote")
-            return
-        except Exception as e:
-            print(e)
 
     @commands.Cog.listener('on_command')
     async def cmd_logs(self, ctx):

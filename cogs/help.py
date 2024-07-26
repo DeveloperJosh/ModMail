@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 from utils.bot import ModMail
-from typing import Union
 
 async def get_bot_help(bot: ModMail) -> discord.Embed:
     embed = discord.Embed(
